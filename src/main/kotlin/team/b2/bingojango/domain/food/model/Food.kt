@@ -21,12 +21,15 @@ class Food(
     val expirationDate: ZonedDateTime,
 
     @ManyToOne
+    @JoinColumn(name = "group_buying_id")
     val groupBuying: GroupBuying?,
 
     @ManyToOne
+    @JoinColumn(name = "refrigerator_id")
     val refrigerator: Refrigerator?
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "food_id", nullable = false)
     val id: Long? = null
 }

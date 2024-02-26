@@ -31,9 +31,11 @@ class Member(
     val status: MemberStatus,
 
     @ManyToOne
+    @JoinColumn(name = "refrigerator_id")
     val refrigerator: Refrigerator?
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_id", nullable = false)
     val id: Long? = null
 }

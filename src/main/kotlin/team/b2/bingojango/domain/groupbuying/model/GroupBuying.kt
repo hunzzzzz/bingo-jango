@@ -8,9 +8,11 @@ import team.b2.bingojango.global.entity.BaseEntity
 @Table(name = "Group_Buying")
 class GroupBuying(
     @ManyToOne
+    @JoinColumn(name = "refrigerator_id")
     val refrigerator: Refrigerator?
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "group_buying_id", nullable = false)
     val id: Long? = null
 }

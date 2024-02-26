@@ -15,5 +15,6 @@ class Refrigerator(
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "refrigerator_id", nullable = false)
     val id: Long? = null
 }
