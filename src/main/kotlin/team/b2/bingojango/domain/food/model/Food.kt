@@ -1,7 +1,7 @@
 package team.b2.bingojango.domain.food.model
 
 import jakarta.persistence.*
-import team.b2.bingojango.domain.groupbuying.model.GroupBuying
+import team.b2.bingojango.domain.purchase.model.Purchase
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.global.entity.BaseEntity
@@ -21,8 +21,8 @@ class Food(
     val expirationDate: ZonedDateTime,
 
     @ManyToOne
-    @JoinColumn(name = "group_buying_id")
-    val groupBuying: GroupBuying?,
+    @JoinColumn(name = "purchase_id")
+    val purchase: Purchase?,
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
