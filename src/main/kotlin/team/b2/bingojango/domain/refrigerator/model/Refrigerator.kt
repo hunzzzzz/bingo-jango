@@ -11,7 +11,7 @@ class Refrigerator(
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val status: RefrigeratorStatus
+    val status: RefrigeratorStatus = RefrigeratorStatus.NORMAL
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
