@@ -11,6 +11,9 @@ class Purchase(
     @Enumerated(EnumType.STRING)
     var status: PurchaseStatus = PurchaseStatus.ACTIVE,
 
+    @Column(name = "proposed_by", nullable = false)
+    val proposedBy: Long,
+
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
     val refrigerator: Refrigerator?

@@ -52,6 +52,7 @@ class PurchaseService(
                     )
                 )
             },
+            member = getMember(userPrincipal.id),
             numberOfStaff = getNumberOfStaff()
         )
 
@@ -67,17 +68,18 @@ class PurchaseService(
             if (isAccepted) {
                 it.vote(getMember(userPrincipal.id))
                 if (isCompletedVote(it))
-                    getCurrentPurchase(refrigeratorId).updateStatus(PurchaseStatus.FINISHED)
+                    getCurrentPurchase(userPrincipal, refrigeratorId).updateStatus(PurchaseStatus.FINISHED)
             } else
-                getCurrentPurchase(refrigeratorId).updateStatus(PurchaseStatus.REJECTED)
+                getCurrentPurchase(userPrincipal, refrigeratorId).updateStatus(PurchaseStatus.REJECTED)
         }
     }
 
     // [내부 메서드] Purchase 객체 생성 (FoodService > getCurrentPurchase 에서만 사용되는 메서드)
-    fun makePurchase(refrigerator: Refrigerator) =
+    fun makePurchase(userPrincipal: UserPrincipal, refrigerator: Refrigerator) =
         purchaseRepository.save(
             Purchase(
                 status = PurchaseStatus.ACTIVE,
+                proposedBy = userPrincipal.id,
                 refrigerator = refrigerator
             )
         )
@@ -95,9 +97,9 @@ class PurchaseService(
         - status 가 ACTIVE (투표 진행중) 인 Purchase 가 없다면, 새로운 Purchase 객체를 생성 후 리턴
         * TODO : 추후 조회 과정 리팩토링 필요
     */
-    private fun getCurrentPurchase(refrigeratorId: Long) =
+    private fun getCurrentPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long) =
         purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
-            ?: makePurchase(getRefrigerator(refrigeratorId))
+            ?: makePurchase(userPrincipal, getRefrigerator(refrigeratorId))
 
     private fun getVote(voteId: Long) =
         voteRepository.findByIdOrNull(voteId) ?: throw Exception("") // TODO
