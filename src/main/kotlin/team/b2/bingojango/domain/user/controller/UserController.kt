@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import team.b2.bingojango.domain.user.dto.EditRequest
-import team.b2.bingojango.domain.user.dto.LoginRequest
-import team.b2.bingojango.domain.user.dto.LoginResponse
+import team.b2.bingojango.domain.user.dto.request.EditRequest
+import team.b2.bingojango.domain.user.dto.request.LoginRequest
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.UserPrincipal
 
