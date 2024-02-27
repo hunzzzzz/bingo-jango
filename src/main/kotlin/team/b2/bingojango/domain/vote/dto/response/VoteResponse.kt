@@ -14,7 +14,7 @@ data class VoteResponse(
         fun from(vote: Vote, member: Member, numberOfStaff: Long) = VoteResponse(
             description = vote.description ?: "",
             dueDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(vote.dueDate),
-            memberName = "제안자: ${member.user.nickname}",
+            memberName = member.user.nickname,
             voteStatus = "투표 현황: 찬성 ${vote.voters.size}명 / ${numberOfStaff}명"
         )
     }
