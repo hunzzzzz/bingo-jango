@@ -22,7 +22,7 @@ class BingoJangoApplicationTests {
     @Test
     fun 냉장고임시등록() {
         refrigeratorRepository.save(
-            Refrigerator(name = "임시 냉장고")
+            Refrigerator(name = "임시 냉장고", password = "1234")
         )
     }
 
