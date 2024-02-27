@@ -20,14 +20,14 @@ class User(
     var phone: String,
 
     @Column(name = "email", nullable = false)
-    val email: String,
+    var email: String,
 
     @Column(name = "password", nullable = false)
     var password: String,
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    var status: UserStatus
+    var status: UserStatus = UserStatus.NORMAL
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

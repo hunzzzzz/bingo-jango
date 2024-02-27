@@ -9,7 +9,10 @@ import team.b2.bingojango.global.entity.BaseEntity
 class Purchase(
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val status: PurchaseStatus = PurchaseStatus.ON_VOTE,
+    var status: PurchaseStatus = PurchaseStatus.ACTIVE,
+
+    @Column(name = "proposed_by", nullable = false)
+    val proposedBy: Long,
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
@@ -19,4 +22,8 @@ class Purchase(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "purchase_id", nullable = false)
     val id: Long? = null
+
+    fun updateStatus(status: PurchaseStatus) {
+        this.status = status
+    }
 }
