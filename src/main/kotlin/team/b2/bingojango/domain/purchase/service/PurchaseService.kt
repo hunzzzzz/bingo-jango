@@ -17,24 +17,18 @@ class PurchaseService(
     private val purchaseFoodRepository: PurchaseFoodRepository,
     private val refrigeratorRepository: RefrigeratorRepository
 ) {
-    /*
-        [API] 현재 진행 중인 Purchase 목록을 출력
-            - status 가 ON_VOTE (투표 진행중) 인 Purchase 확인
-            - 현재 Purchase 목록이 없다면 예외 메시지 출력
-            * TODO : 추후 조회 과정 리팩토링 필요
-     */
+
+    // [API] 현재 진행 중인 Purchase 목록을 출력
+    // TODO : 추후 조회 과정 리팩토링 필요
     fun showPurchase(refrigeratorId: Long) =
-        PurchaseFoodResponse.from(
-            purchaseFoodRepository.findAll()
-                .firstOrNull { it.purchase.status == PurchaseStatus.ON_VOTE }
-                ?: throw Exception("") // TODO
-        )
+        purchaseFoodRepository.findAll()
+            .filter { it.purchase.status == PurchaseStatus.ON_VOTE }
+            .map { PurchaseFoodResponse.from(it) }
 
     // [내부 메서드] Purchase 객체 생성 (FoodService > getCurrentPurchase 에서만 사용되는 메서드)
     fun makePurchase(refrigeratorId: Long) =
         purchaseRepository.save(
             Purchase(
-                isAccepted = false,
                 status = PurchaseStatus.ON_VOTE,
                 refrigerator = getRefrigerator(refrigeratorId)
             )

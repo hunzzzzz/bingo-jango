@@ -7,12 +7,9 @@ import team.b2.bingojango.global.entity.BaseEntity
 @Entity
 @Table(name = "Purchase")
 class Purchase(
-    @Column(name = "is_accepted", nullable = false)
-    val isAccepted: Boolean,
-
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val status: PurchaseStatus,
+    val status: PurchaseStatus = PurchaseStatus.ON_VOTE,
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
