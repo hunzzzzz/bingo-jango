@@ -41,12 +41,12 @@ class FoodService(
 
     /*
         [내부 메서드] 현재 진행 중인 Purchase (공동구매)를 리턴
-            - status 가 ON_VOTE (투표 진행중) 인 Purchase 확인
-            - status 가 ON_VOTE (투표 진행중) 인 Purchase 가 없다면, 새로운 Purchase 객체를 생성 후 리턴
+            - status 가 ACTIVE (활성화) 인 Purchase 확인
+            - status 가 ACTIVE (활성화) 인 Purchase 가 없다면, 새로운 Purchase 객체를 생성 후 리턴
             * TODO : 추후 조회 과정 리팩토링 필요
      */
     private fun getCurrentPurchase(refrigeratorId: Long) =
-        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ON_VOTE }
+        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
             ?: purchaseService.makePurchase(getRefrigerator(refrigeratorId))
 
     /*

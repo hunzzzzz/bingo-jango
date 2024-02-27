@@ -27,7 +27,7 @@ class User(
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val status: UserStatus
+    val status: UserStatus = UserStatus.NORMAL
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
