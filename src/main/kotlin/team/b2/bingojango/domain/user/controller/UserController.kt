@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.user.dto.request.EditRequest
 import team.b2.bingojango.domain.user.dto.request.LoginRequest
+import team.b2.bingojango.domain.user.dto.request.PasswordRequest
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.UserPrincipal
@@ -57,11 +58,10 @@ class UserController(
     // 비밀번호 변경
     @PatchMapping("mypage/change-pwd")
     fun updateUserPassword(
-        @Parameter(description = "password, newPassword, reNewPassword 만 입력")
-        @RequestBody editRequest: EditRequest,
+        @RequestBody passwordRequest: PasswordRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<String>{
-        userService.updateUserPassword(editRequest, userPrincipal)
+        userService.updateUserPassword(passwordRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("비밀번호가 변경되었습니다.")
@@ -71,10 +71,10 @@ class UserController(
     @PutMapping("mypage/withdraw")
     fun withdrawUser(
         @Parameter(description = "password 만 입력")
-        @RequestBody editRequest: EditRequest,
+        @RequestBody passwordRequest: PasswordRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<String>{
-        userService.withdrawUser(editRequest, userPrincipal)
+        userService.withdrawUser(passwordRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("탈퇴가 정상적으로 완료되었습니다.")
