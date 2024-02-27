@@ -4,11 +4,34 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.AccessDeniedHandler
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import team.b2.bingojango.global.security.jwt.JwtAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig {
+class SecurityConfig(
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val authenticationEntryPoint: AuthenticationEntryPoint,
+    private val accessDeniedHandler: AccessDeniedHandler
+) {
+
+    //모든 사용자에게 접근 허용
+    private val allowedUrls = arrayOf(
+        "/swagger-ui/**",
+        "/v3/**",
+        "/h2-console/**",
+        "/**" // TODO : 추후 삭제
+    )
+
+    //익명의 사용자만 접근 허용
+    private val anonymousUrls = arrayOf(
+        "/signup",
+        "/login",
+    )
+
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         return http
@@ -18,11 +41,14 @@ class SecurityConfig {
             .cors { it.disable() }
             .headers { it.frameOptions { foc -> foc.disable() } }
             .authorizeHttpRequests {
-                it.requestMatchers(
-                    "/h2-console/**",
-                    "/**" // TODO : 추후 삭제
-                ).permitAll()
-                    .anyRequest().authenticated()
+                    it.requestMatchers(*allowedUrls).permitAll()
+                        .requestMatchers(*anonymousUrls).anonymous()
+                        .anyRequest().authenticated()
+            }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .exceptionHandling {
+                it.authenticationEntryPoint(authenticationEntryPoint)
+                it.accessDeniedHandler(accessDeniedHandler)
             }
             .build()
     }

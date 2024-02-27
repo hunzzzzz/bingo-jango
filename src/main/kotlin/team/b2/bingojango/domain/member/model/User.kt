@@ -5,11 +5,11 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.entity.BaseEntity
 
 @Entity
-@Table(name = "Members")
-class Member(
+@Table(name = "Users")
+class User(
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
-    val role: MemberRole = MemberRole.USER,
+    val role: UserRole = UserRole.USER,
 
     @Column(name = "name", nullable = false)
     val name: String,
@@ -28,7 +28,7 @@ class Member(
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val status: MemberStatus,
+    val status: UserStatus,
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
@@ -36,6 +36,6 @@ class Member(
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     val id: Long? = null
 }
