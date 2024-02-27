@@ -20,7 +20,7 @@ class User(
     var phone: String,
 
     @Column(name = "email", nullable = false)
-    val email: String,
+    var email: String,
 
     @Column(name = "password", nullable = false)
     var password: String,
