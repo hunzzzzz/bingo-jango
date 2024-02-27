@@ -14,6 +14,7 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.domain.vote.dto.request.VoteRequest
+import team.b2.bingojango.domain.vote.dto.response.VoteResponse
 import team.b2.bingojango.domain.vote.model.Vote
 import team.b2.bingojango.domain.vote.repository.VoteRepository
 import team.b2.bingojango.global.security.UserPrincipal
@@ -35,17 +36,24 @@ class PurchaseService(
             .filter { it.purchase.status == PurchaseStatus.ACTIVE }
             .map { PurchaseProductResponse.from(it) }
 
-    // [API] 현재 공동구매 목록에 대한 투표 시작
+    /*
+        [API] 현재 공동구매 목록에 대한 투표 시작
+            - TODO : 공동구매를 신청한 사람만 투표를 시작할 수 있음
+            - TODO : 현재 ACTIVE 한 공동구매가 없는 경우 투표가 진행되지 않음
+     */
     fun startVote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteRequest: VoteRequest) =
-        getMember(userPrincipal.id).let {
-            voteRepository.save(
-                voteRequest.to(
-                    request = voteRequest,
-                    refrigerator = getRefrigerator(refrigeratorId),
-                    member = it
+        VoteResponse.from(
+            vote = getMember(userPrincipal.id).let {
+                voteRepository.save(
+                    voteRequest.to(
+                        request = voteRequest,
+                        refrigerator = getRefrigerator(refrigeratorId),
+                        member = it
+                    )
                 )
-            )
-        }
+            },
+            numberOfStaff = getNumberOfStaff()
+        )
 
     /*
         [API] 투표 실시
@@ -65,10 +73,6 @@ class PurchaseService(
         }
     }
 
-    // [내부 메서드] 만장일치를 받았는지 확인 (냉장고 내 관리자의 수 == 찬성한 인원 수)
-    private fun isCompletedVote(vote: Vote) =
-        memberRepository.countByRole(MemberRole.STAFF) == vote.voters.size.toLong()
-
     // [내부 메서드] Purchase 객체 생성 (FoodService > getCurrentPurchase 에서만 사용되는 메서드)
     fun makePurchase(refrigerator: Refrigerator) =
         purchaseRepository.save(
@@ -77,6 +81,13 @@ class PurchaseService(
                 refrigerator = refrigerator
             )
         )
+
+    // [내부 메서드] 만장일치를 받았는지 확인 (냉장고 내 관리자의 수 == 찬성한 인원 수)
+    private fun isCompletedVote(vote: Vote) =
+        getNumberOfStaff() == vote.voters.size.toLong()
+
+    // [내부 메서드] 현재 Refrigerator 내 관리자(STAFF) 의 수
+    private fun getNumberOfStaff() = memberRepository.countByRole(MemberRole.STAFF)
 
     /*
     [내부 메서드] 현재 진행 중인 Purchase (공동구매)를 리턴
