@@ -8,4 +8,6 @@ import team.b2.bingojango.domain.user.model.User
 interface UserRepository : JpaRepository<User, Long> {
 
     fun findByEmail(email:String) : User?
+
+    fun existsByNickname(nickname: String) : Boolean
 }
