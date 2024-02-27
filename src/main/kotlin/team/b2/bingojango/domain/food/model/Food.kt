@@ -1,7 +1,6 @@
 package team.b2.bingojango.domain.food.model
 
 import jakarta.persistence.*
-import team.b2.bingojango.domain.purchase.model.Purchase
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.entity.BaseEntity
 import java.time.ZonedDateTime
@@ -18,10 +17,6 @@ class Food(
 
     @Column(name = "expiration_date", nullable = false)
     val expirationDate: ZonedDateTime,
-
-    @ManyToOne
-    @JoinColumn(name = "purchase_id")
-    val purchase: Purchase?,
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
