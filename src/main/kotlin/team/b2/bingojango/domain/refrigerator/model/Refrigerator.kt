@@ -9,6 +9,9 @@ class Refrigerator(
     @Column(name = "name", nullable = false)
     val name: String,
 
+    @Column(name = "password", nullable = false)
+    val password: String,
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     val status: RefrigeratorStatus = RefrigeratorStatus.NORMAL
