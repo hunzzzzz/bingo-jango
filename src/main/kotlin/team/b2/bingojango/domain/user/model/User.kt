@@ -1,7 +1,6 @@
-package team.b2.bingojango.domain.member.model
+package team.b2.bingojango.domain.user.model
 
 import jakarta.persistence.*
-import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.entity.BaseEntity
 
 @Entity
@@ -28,11 +27,7 @@ class User(
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val status: UserStatus,
-
-    @ManyToOne
-    @JoinColumn(name = "refrigerator_id")
-    val refrigerator: Refrigerator?
+    val status: UserStatus
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

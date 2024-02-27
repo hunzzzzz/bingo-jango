@@ -1,10 +1,10 @@
-package team.b2.bingojango.domain.member.service
+package team.b2.bingojango.domain.user.service
 
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import team.b2.bingojango.domain.member.dto.LoginRequest
-import team.b2.bingojango.domain.member.dto.LoginResponse
-import team.b2.bingojango.domain.member.repository.UserRepository
+import team.b2.bingojango.domain.user.dto.LoginRequest
+import team.b2.bingojango.domain.user.dto.LoginResponse
+import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.InvalidCredentialException
 import team.b2.bingojango.global.security.jwt.JwtPlugin
 
