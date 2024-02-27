@@ -10,6 +10,10 @@ class Purchase(
     @Column(name = "is_accepted", nullable = false)
     val isAccepted: Boolean,
 
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    val status: PurchaseStatus,
+
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
     val refrigerator: Refrigerator?
