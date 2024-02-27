@@ -15,7 +15,7 @@ data class VoteResponse(
             description = vote.description ?: "",
             dueDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(vote.dueDate),
             memberName = member.user.nickname,
-            voteStatus = "투표 현황: 찬성 ${vote.voters.size}명 / ${numberOfStaff}명"
+            voteStatus = "${vote.voters.size} / $numberOfStaff"
         )
     }
 }
