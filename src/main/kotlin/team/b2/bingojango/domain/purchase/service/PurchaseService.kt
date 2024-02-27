@@ -8,6 +8,7 @@ import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.repository.PurchaseRepository
 import team.b2.bingojango.domain.purchase_product.dto.response.PurchaseProductResponse
 import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepository
+import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 
 @Service
@@ -26,15 +27,11 @@ class PurchaseService(
             .map { PurchaseProductResponse.from(it) }
 
     // [내부 메서드] Purchase 객체 생성 (FoodService > getCurrentPurchase 에서만 사용되는 메서드)
-    fun makePurchase(refrigeratorId: Long) =
+    fun makePurchase(refrigerator: Refrigerator) =
         purchaseRepository.save(
             Purchase(
                 status = PurchaseStatus.ON_VOTE,
-                refrigerator = getRefrigerator(refrigeratorId)
+                refrigerator = refrigerator
             )
         )
-
-    // [내부 메서드] id로 Refrigerator 객체 가져오기
-    private fun getRefrigerator(refrigeratorId: Long) =
-        refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw Exception("") // TODO
 }
