@@ -2,6 +2,7 @@ package team.b2.bingojango.domain.refrigerator.service
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.refrigerator.dto.AddRefrigeratorRequest
@@ -23,6 +24,7 @@ class RefrigeratorService(
         return member.map{ it.refrigerator.toResponse() }
     }
 
+    @Transactional
     fun addRefrigerator(userPrincipal: UserPrincipal, request: AddRefrigeratorRequest): RefrigeratorResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
