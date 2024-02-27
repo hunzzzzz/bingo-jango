@@ -19,14 +19,14 @@ class Vote(
     val refrigerator: Refrigerator,
 
     @ManyToMany
-    val voters: MutableSet<Member> = mutableSetOf()
+    val voters: MutableSet<Member>
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "food_id", nullable = false)
     val id: Long? = null
 
-    fun vote(member: Member) {
+    fun updateVote(member: Member) {
         voters.add(member)
     }
 }
