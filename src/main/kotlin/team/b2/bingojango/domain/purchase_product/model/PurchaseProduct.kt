@@ -1,12 +1,12 @@
-package team.b2.bingojango.domain.purchase_food.model
+package team.b2.bingojango.domain.purchase_product.model
 
 import jakarta.persistence.*
-import team.b2.bingojango.domain.food.model.Food
+import team.b2.bingojango.domain.product.model.Product
 import team.b2.bingojango.domain.purchase.model.Purchase
 
 @Entity
-@Table(name = "Purchase_Food")
-class PurchaseFood(
+@Table(name = "Purchase_Product")
+class PurchaseProduct(
     @Column(name = "count", nullable = false)
     val count: Int,
 
@@ -15,11 +15,11 @@ class PurchaseFood(
     val purchase: Purchase,
 
     @ManyToOne
-    @JoinColumn(name = "food_id")
-    val food: Food
+    @JoinColumn(name = "product_id")
+    val product: Product
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "purchase_food_id")
+    @Column(name = "purchase_product_id")
     val id: Long? = null
 }
