@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import team.b2.bingojango.global.exception.ErrorResponse
 
 @Component
-class CustomAccessDeniedHandler: AccessDeniedHandler {
+class CustomAccessDeniedHandler : AccessDeniedHandler {
     override fun handle(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -21,7 +21,13 @@ class CustomAccessDeniedHandler: AccessDeniedHandler {
         response.characterEncoding = "UTF-8"
 
         val objectMapper = ObjectMapper()
-        val jsonString = objectMapper.writeValueAsString(ErrorResponse("No permission to run API"))
+        val jsonString = objectMapper.writeValueAsString(
+            ErrorResponse(
+                httpStatus = "401 Unauthorized",
+                message = "No permission to run API",
+                path = request.requestURI
+            )
+        )
         response.writer.write(jsonString)
     }
 }
