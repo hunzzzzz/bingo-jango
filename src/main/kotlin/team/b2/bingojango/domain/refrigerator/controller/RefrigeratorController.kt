@@ -51,3 +51,4 @@ class RefrigeratorController(
             .status(HttpStatus.OK)
             .body(refrigeratorService.joinRefrigerator(userPrincipal, request))
     }
+}
