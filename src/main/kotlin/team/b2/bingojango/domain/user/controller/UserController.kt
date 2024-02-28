@@ -45,7 +45,6 @@ class UserController(
     // 프로필 수정
     @PatchMapping("mypage/update")
     fun updateUserProfile(
-        @Parameter(description = "name, nickname, phone 만 입력")
         @RequestBody editRequest: EditRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<String>{
