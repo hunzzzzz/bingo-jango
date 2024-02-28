@@ -58,6 +58,20 @@ class PurchaseService(
 
     /*
         [API] 공동구매 목록에서 특정 식품 삭제
+            - 검증 조건 1: 해당 공동구매를 올린 사람만 수정을 할 수 있음
+            - 검증 조건 2: 현재 공동구매에 존재하는 식품만 수정할 수 있음
+    */
+    fun updateFoodInPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) {
+        if (getCurrentPurchase().proposedBy != userPrincipal.id)
+            throw InvalidRoleException()
+        (purchaseProductRepository.findByRefrigeratorAndProduct(
+            refrigerator = entityFinder.getRefrigerator(refrigeratorId),
+            product = getProduct(foodId, refrigeratorId)
+        ) ?: throw ModelNotFoundException("식품")).updateCount(count)
+    }
+
+    /*
+        [API] 공동구매 목록에서 특정 식품 삭제
             - 검증 조건 1: 해당 공동구매를 올린 사람만 삭제를 할 수 있음
             - 검증 조건 2: 현재 공동구매에 존재하는 식품만 삭제할 수 있음
      */

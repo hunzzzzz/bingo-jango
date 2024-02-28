@@ -15,7 +15,7 @@ class PurchaseController(
     private val purchaseService: PurchaseService
 ) {
     @Operation(summary = "특정 식품에 대한 공동구매 신청")
-    @PostMapping("/purchase/{foodId}")
+    @PostMapping("/foods/{foodId}")
     fun addFoodToPurchase(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable refrigeratorId: Long,
@@ -24,8 +24,18 @@ class PurchaseController(
     ) =
         ResponseEntity.ok().body(purchaseService.addFoodToPurchase(userPrincipal, refrigeratorId, foodId, count))
 
+    @Operation(summary = "공동구매 목록에 포함된 식품의 개수 수정")
+    @PutMapping("/foods/{foodId}")
+    fun updateFoodInPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable foodId: Long,
+        @RequestParam count: Int
+    ) =
+        ResponseEntity.ok().body(purchaseService.updateFoodInPurchase(userPrincipal, refrigeratorId, foodId, count))
+
     @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
-    @DeleteMapping("/purchase/{foodId}")
+    @DeleteMapping("/foods/{foodId}")
     fun deleteFoodFromPurchase(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable refrigeratorId: Long,
