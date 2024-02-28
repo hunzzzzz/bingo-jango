@@ -49,4 +49,3 @@ class RefrigeratorService(
 
         return refrigerator.toResponse()
     }
-}

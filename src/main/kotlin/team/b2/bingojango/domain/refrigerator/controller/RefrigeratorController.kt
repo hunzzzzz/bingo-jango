@@ -33,6 +33,7 @@ class RefrigeratorController(
     fun addRefrigerator(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody request: RefrigeratorRequest
+
     ): ResponseEntity<RefrigeratorResponse> {
         return ResponseEntity
             .status(HttpStatus.CREATED)
@@ -50,6 +51,3 @@ class RefrigeratorController(
             .status(HttpStatus.OK)
             .body(refrigeratorService.joinRefrigerator(userPrincipal, request))
     }
-
-
-}
