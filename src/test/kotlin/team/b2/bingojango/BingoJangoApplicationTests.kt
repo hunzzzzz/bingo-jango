@@ -42,6 +42,16 @@ class BingoJangoApplicationTests {
             )
         )
 
+        userRepository.save(
+            User(
+                name = "두부",
+                nickname = "dubu",
+                phone = "010-1234-5678",
+                email = "doubleh819@naver.com",
+                password = passwordEncoder.encode("1234"),
+                status = UserStatus.NORMAL
+            )
+        )
     }
 
     @Test
