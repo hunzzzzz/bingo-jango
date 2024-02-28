@@ -1,6 +1,8 @@
 package team.b2.bingojango.domain.refrigerator.model
 
 import jakarta.persistence.*
+import team.b2.bingojango.domain.refrigerator.dto.AddRefrigeratorRequest
+import team.b2.bingojango.domain.refrigerator.dto.RefrigeratorResponse
 import team.b2.bingojango.global.entity.BaseEntity
 
 @Entity
@@ -20,4 +22,21 @@ class Refrigerator(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "refrigerator_id", nullable = false)
     val id: Long? = null
+
+    companion object {
+        fun toEntity(request: AddRefrigeratorRequest): Refrigerator {
+            return Refrigerator(
+                name = request.name,
+                password = request.password,
+                status = RefrigeratorStatus.NORMAL
+            )
+        }
+    }
+
+    fun toResponse(): RefrigeratorResponse {
+        return RefrigeratorResponse(
+            id = id!!,
+            name = name
+        )
+    }
 }

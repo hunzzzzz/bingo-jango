@@ -23,4 +23,14 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
     val id: Long? = null
+
+    companion object {
+        fun toEntity(user: User, refrigerator: Refrigerator): Member {
+            return Member(
+                role = MemberRole.STAFF,
+                user = user,
+                refrigerator = refrigerator
+            )
+        }
+    }
 }
