@@ -34,12 +34,15 @@ class PurchaseService(
     /*
     [API] 해당 식품을 n개 만큼 공동구매 신청
         - 검증 조건 1 : 관리자(STAFF)만 공동구매를 신청할 수 있음
-        - 검증 조건 2 : 현재 공동구매 중인 식품은 추가할 수 없음
+        - 검증 조건 2 : 다른 관리자가 시작한 공동구매가 있는 경우 신청할 수 없음
+        - 검증 조건 3 : 현재 공동구매 중인 식품은 추가할 수 없음
 */
     fun addFoodToPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) =
         getCurrentPurchase(userPrincipal, refrigeratorId).let {
             if (entityFinder.getMember(userPrincipal.id, refrigeratorId).role != MemberRole.STAFF)
                 throw InvalidRoleException()
+            else if (purchaseRepository.existsByStatus(PurchaseStatus.ACTIVE) && getCurrentPurchase().proposedBy != userPrincipal.id)
+                throw AlreadyHaveActivePurchaseException()
             else if (purchaseProductRepository.findAllByPurchase(getCurrentPurchase())
                     .map { purchaseProduct -> purchaseProduct.product.food }
                     .contains(entityFinder.getFood(foodId))
