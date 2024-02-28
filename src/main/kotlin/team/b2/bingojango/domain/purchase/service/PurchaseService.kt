@@ -1,40 +1,91 @@
 package team.b2.bingojango.domain.purchase.service
 
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import team.b2.bingojango.domain.purchase.model.Purchase
+import team.b2.bingojango.domain.member.model.MemberRole
+import team.b2.bingojango.domain.member.repository.MemberRepository
+import team.b2.bingojango.domain.purchase.dto.response.PurchaseResponse
 import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.repository.PurchaseRepository
 import team.b2.bingojango.domain.purchase_product.dto.response.PurchaseProductResponse
 import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepository
-import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
+import team.b2.bingojango.domain.vote.dto.request.VoteRequest
+import team.b2.bingojango.domain.vote.repository.VoteRepository
+import team.b2.bingojango.global.exception.cases.DuplicatedVoteException
+import team.b2.bingojango.global.exception.cases.InvalidRoleException
+import team.b2.bingojango.global.exception.cases.NoCurrentPurchaseException
+import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.util.EntityFinder
 
 @Service
 @Transactional
 class PurchaseService(
+    private val memberRepository: MemberRepository,
     private val purchaseRepository: PurchaseRepository,
     private val purchaseProductRepository: PurchaseProductRepository,
-    private val refrigeratorRepository: RefrigeratorRepository
+    private val voteRepository: VoteRepository,
+    private val entityFinder: EntityFinder
 ) {
-
     // [API] 현재 진행 중인 Purchase 목록을 출력
-    // TODO : 추후 조회 과정 리팩토링 필요
     fun showPurchase(refrigeratorId: Long) =
-        purchaseProductRepository.findAll()
-            .filter { it.purchase.status == PurchaseStatus.ON_VOTE }
-            .map { PurchaseProductResponse.from(it) }
+        getCurrentPurchase()
+            .let {
+                PurchaseResponse.from(
+                    member = entityFinder.getMember(it.proposedBy, refrigeratorId),
+                    purchaseProductList = purchaseProductRepository.findAllByPurchase(it)
+                        .map { purchaseProduct -> PurchaseProductResponse.from(purchaseProduct) }
+                )
+            }
 
-    // [내부 메서드] Purchase 객체 생성 (FoodService > getCurrentPurchase 에서만 사용되는 메서드)
-    fun makePurchase(refrigeratorId: Long) =
-        purchaseRepository.save(
-            Purchase(
-                status = PurchaseStatus.ON_VOTE,
-                refrigerator = getRefrigerator(refrigeratorId)
+    /*
+        [API] 현재 공동구매 목록에 대한 투표 시작
+            - 검증 조건 1: 공동구매를 신청한 회원 본인만 투표를 시작할 수 있음
+            - 검증 조건 2: STAFF 의 수가 1명인 경우, 투표 과정을 생략하고 현재 Purchase 의 status 를 FINISHED 로 변경
+     */
+    fun startVote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteRequest: VoteRequest) {
+        if (getCurrentPurchase().proposedBy != userPrincipal.id) throw InvalidRoleException()
+        else if (getNumberOfStaff() == 1L) getCurrentPurchase().updateStatus(PurchaseStatus.FINISHED)
+
+        voteRepository.save(
+            voteRequest.to(
+                request = voteRequest,
+                refrigerator = entityFinder.getRefrigerator(refrigeratorId),
+                member = entityFinder.getMember(userPrincipal.id, refrigeratorId)
             )
         )
+    }
 
-    // [내부 메서드] id로 Refrigerator 객체 가져오기
-    private fun getRefrigerator(refrigeratorId: Long) =
-        refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw Exception("") // TODO
+    /*
+        [API] 투표 실시
+            - 검증 조건 1: 관리자(STAFF)만 투표를 할 수 있음
+            - 검증 조건 2: 이미 투표한 경우, 투표 결과를 수정할 수 없음
+            - 검증 조건 3-1: 찬성에 투표한 경우, voters 에 해당 Member 객체를 add
+            - 검증 조건 3-2: 만장일치가 완성된 경우, 투표를 종료하고 현재 Purchase 의 status 를 FINISHED 로 변경
+            - 검증 조건 4: 반대에 투표한 경우, 투표를 종료하고 현재 Purchase 의 status 를 REJECTED 로 변경
+     */
+    fun vote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteId: Long, isAccepted: Boolean) =
+        entityFinder.getMember(userPrincipal.id, refrigeratorId)
+            .let {
+                if (it.role != MemberRole.STAFF)
+                    throw InvalidRoleException()
+                else if (entityFinder.getVote(voteId).voters.contains(it))
+                    throw DuplicatedVoteException()
+
+                entityFinder.getVote(voteId).let { vote ->
+                    if (isAccepted) {
+                        vote.updateVote(entityFinder.getMember(userPrincipal.id, refrigeratorId))
+                        if (getNumberOfStaff() == vote.voters.size.toLong())
+                            getCurrentPurchase().updateStatus(PurchaseStatus.FINISHED)
+                    } else
+                        getCurrentPurchase().updateStatus(PurchaseStatus.REJECTED)
+                }
+            }
+
+    // [내부 메서드] 현재 Refrigerator 내 관리자(STAFF) 의 수
+    private fun getNumberOfStaff() = memberRepository.countByRole(MemberRole.STAFF)
+
+    // [내부 메서드] 현재 진행 중인(status 가 ACTIVE 한) Purchase 를 리턴 (없으면 예외 처리)
+    private fun getCurrentPurchase() =
+        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
+            ?: throw NoCurrentPurchaseException()
 }

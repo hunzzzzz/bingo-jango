@@ -1,22 +1,27 @@
 package team.b2.bingojango.domain.user.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import team.b2.bingojango.domain.user.dto.LoginRequest
-import team.b2.bingojango.domain.user.dto.LoginResponse
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
+import team.b2.bingojango.domain.user.dto.request.EditRequest
+import team.b2.bingojango.domain.user.dto.request.LoginRequest
+import team.b2.bingojango.domain.user.dto.request.PasswordRequest
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.service.UserService
+import team.b2.bingojango.global.security.UserPrincipal
 
-
+@Tag(name = "user", description = "유저")
 @RestController
 @RequestMapping("/")
 class UserController(
     private val userService: UserService
 ) {
+    @Operation(summary = "로그인")
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
     fun login(
@@ -26,4 +31,52 @@ class UserController(
             .status(HttpStatus.OK)
             .body(userService.login(loginRequest))
     }
+
+    @Operation(summary = "로그아웃")
+    @GetMapping("/logout")
+    fun logout(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<Unit>{
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build()
+    }
+
+    // 프로필 수정
+    @PatchMapping("mypage/update")
+    fun updateUserProfile(
+        @RequestBody editRequest: EditRequest,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<String>{
+        userService.updateUserProfile(editRequest, userPrincipal)
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body("정보가 변경되었습니다.")
+    }
+
+    // 비밀번호 변경
+    @PatchMapping("mypage/change-pwd")
+    fun updateUserPassword(
+        @RequestBody passwordRequest: PasswordRequest,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<String>{
+        userService.updateUserPassword(passwordRequest, userPrincipal)
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body("비밀번호가 변경되었습니다.")
+    }
+
+    // 회원 탈퇴
+    @PutMapping("mypage/withdraw")
+    fun withdrawUser(
+        @Parameter(description = "password 만 입력")
+        @RequestBody passwordRequest: PasswordRequest,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<String>{
+        userService.withdrawUser(passwordRequest, userPrincipal)
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body("탈퇴가 정상적으로 완료되었습니다.")
+    }
+
 }

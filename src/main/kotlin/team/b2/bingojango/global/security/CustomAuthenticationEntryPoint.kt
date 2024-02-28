@@ -8,6 +8,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.stereotype.Component
 import team.b2.bingojango.global.exception.ErrorResponse
+import team.b2.bingojango.global.exception.SecurityResponse
 
 @Component
 class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
@@ -21,7 +22,7 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         response.characterEncoding = "UTF-8"
 
         val objectMapper = ObjectMapper()
-        val jsonString = objectMapper.writeValueAsString(ErrorResponse("JWT verification failed"))
+        val jsonString = objectMapper.writeValueAsString(SecurityResponse("JWT verification failed"))
         response.writer.write(jsonString)
     }
 }
