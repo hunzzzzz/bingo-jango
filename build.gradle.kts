@@ -28,6 +28,8 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+    // SLACK
+    implementation("com.slack.api:slack-api-client:1.38.1")
     // SWAGGER
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     // TEST
