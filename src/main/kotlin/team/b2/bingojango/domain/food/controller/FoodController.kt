@@ -67,14 +67,14 @@ class FoodController(
     ) =
         ResponseEntity.ok().body(foodService.addFoodToPurchase(userPrincipal, refrigeratorId, foodId, count))
 
-    @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
-    @DeleteMapping("/{foodId}")
-    fun deleteFoodFromPurchase(
-        @AuthenticationPrincipal userPrincipal: UserPrincipal,
-        @PathVariable refrigeratorId: Long,
-        @PathVariable foodId: Long
-    ) =
-        ResponseEntity.ok().body(foodService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
+//    @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
+//    @DeleteMapping("/{foodId}")
+//    fun deleteFoodFromPurchase(
+//        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+//        @PathVariable refrigeratorId: Long,
+//        @PathVariable foodId: Long
+//    ) =
+//        ResponseEntity.ok().body(foodService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
 
     @Operation(summary = "냉장고의 음식 검색 및 정렬")
     @GetMapping
