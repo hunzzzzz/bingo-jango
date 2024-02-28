@@ -51,6 +51,11 @@ class GlobalExceptionHandler(
     fun handleInvalidRoleException(e: InvalidCredentialException) =
         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(getErrorResponse(HttpStatus.UNAUTHORIZED, e))
 
+    // 현재 진행 중인 공동구매가 존재
+    @ExceptionHandler(AlreadyHaveActivePurchaseException::class)
+    fun handleAlreadyHaveActivePurchaseException(e: AlreadyHaveActivePurchaseException) =
+        ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
     // 현재 진행 중인 공동구매 없음
     @ExceptionHandler(NoCurrentPurchaseException::class)
     fun handleNoCurrentPurchaseException(e: NoCurrentPurchaseException) =
