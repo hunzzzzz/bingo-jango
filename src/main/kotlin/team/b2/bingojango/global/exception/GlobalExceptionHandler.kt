@@ -66,6 +66,11 @@ class GlobalExceptionHandler(
     fun handleAlreadyInPurchaseException(e: AlreadyInPurchaseException) =
         ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
+    // 공동구매 목록 안에 식품이 없는 상태에서 투표 시작
+    @ExceptionHandler(UnableToStartVoteException::class)
+    fun handleUnableToStartVoteException(e: UnableToStartVoteException) =
+        ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
     // 중복 투표
     @ExceptionHandler(DuplicatedVoteException::class)
     fun handleDuplicatedVoteException(e: DuplicatedVoteException) =
