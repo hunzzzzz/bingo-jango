@@ -35,6 +35,8 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     // VALIDATION
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    // WEBSOCKET
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     // WEB
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

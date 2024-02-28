@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.member.model
 
 import jakarta.persistence.*
+import team.b2.bingojango.domain.chatroom.model.ChatRoom
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.user.model.User
 
@@ -17,7 +18,11 @@ class Member(
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
-    val refrigerator: Refrigerator
+    val refrigerator: Refrigerator,
+
+    @ManyToOne
+    @JoinColumn(name = "chat_id")
+    val chatRoom: ChatRoom,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,11 +30,12 @@ class Member(
     val id: Long? = null
 
     companion object {
-        fun toEntity(user: User, refrigerator: Refrigerator): Member {
+        fun toEntity(user: User, refrigerator: Refrigerator, chatRoom: ChatRoom): Member {
             return Member(
                 role = MemberRole.STAFF,
                 user = user,
-                refrigerator = refrigerator
+                refrigerator = refrigerator,
+                chatRoom = chatRoom
             )
         }
     }
