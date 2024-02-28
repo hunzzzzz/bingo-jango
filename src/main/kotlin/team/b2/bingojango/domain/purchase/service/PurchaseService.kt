@@ -45,7 +45,8 @@ class PurchaseService(
     fun startVote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteRequest: VoteRequest) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id) throw InvalidRoleException()
         else if (getNumberOfStaff() == 1L) getCurrentPurchase().updateStatus(PurchaseStatus.FINISHED)
-        else voteRepository.save(
+
+        voteRepository.save(
             voteRequest.to(
                 request = voteRequest,
                 refrigerator = entityFinder.getRefrigerator(refrigeratorId),
@@ -62,14 +63,15 @@ class PurchaseService(
             - 검증 조건 3-2: 만장일치가 완성된 경우, 투표를 종료하고 현재 Purchase 의 status 를 FINISHED 로 변경
             - 검증 조건 4: 반대에 투표한 경우, 투표를 종료하고 현재 Purchase 의 status 를 REJECTED 로 변경
      */
-    fun vote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteId: Long, isAccepted: Boolean) {
+    fun vote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteId: Long, isAccepted: Boolean) =
         entityFinder.getMember(userPrincipal.id, refrigeratorId)
             .let {
                 if (it.role != MemberRole.STAFF)
                     throw InvalidRoleException()
                 else if (entityFinder.getVote(voteId).voters.contains(it))
                     throw DuplicatedVoteException()
-                else entityFinder.getVote(voteId).let { vote ->
+
+                entityFinder.getVote(voteId).let { vote ->
                     if (isAccepted) {
                         vote.updateVote(entityFinder.getMember(userPrincipal.id, refrigeratorId))
                         if (getNumberOfStaff() == vote.voters.size.toLong())
@@ -78,7 +80,6 @@ class PurchaseService(
                         getCurrentPurchase().updateStatus(PurchaseStatus.REJECTED)
                 }
             }
-    }
 
     // [내부 메서드] 현재 Refrigerator 내 관리자(STAFF) 의 수
     private fun getNumberOfStaff() = memberRepository.countByRole(MemberRole.STAFF)
