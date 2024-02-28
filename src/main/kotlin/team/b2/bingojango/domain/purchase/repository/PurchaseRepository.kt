@@ -7,4 +7,5 @@ import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 
 @Repository
 interface PurchaseRepository : JpaRepository<Purchase, Long> {
+    fun existsByStatus(status: PurchaseStatus): Boolean
 }
