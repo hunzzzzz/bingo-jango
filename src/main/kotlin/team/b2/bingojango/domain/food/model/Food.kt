@@ -10,13 +10,16 @@ import java.time.ZonedDateTime
 class Food(
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
-    val category: FoodCategory,
+    var category: FoodCategory,
 
     @Column(name = "name", nullable = false)
-    val name: String,
+    var name: String,
 
     @Column(name = "expiration_date", nullable = false)
-    val expirationDate: ZonedDateTime,
+    var expirationDate: ZonedDateTime,
+
+    @Column(name = "count", nullable =  false)
+    var count: Int,
 
     @ManyToOne
     @JoinColumn(name = "refrigerator_id")
