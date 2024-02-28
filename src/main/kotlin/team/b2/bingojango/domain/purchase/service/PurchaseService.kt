@@ -32,14 +32,17 @@ class PurchaseService(
     private val entityFinder: EntityFinder
 ) {
     /*
-    [API] 해당 식품을 n개 만큼 공동구매 신청
-        - 검증 조건 1 : 관리자(STAFF)만 공동구매를 신청할 수 있음
-        - 검증 조건 2 : 현재 공동구매 중인 식품은 추가할 수 없음
-*/
+        [API] 해당 식품을 n개 만큼 공동구매 신청
+            - 검증 조건 1 : 관리자(STAFF)만 공동구매를 신청할 수 있음
+            - 검증 조건 2 : 다른 관리자가 시작한 공동구매가 있는 경우 신청할 수 없음
+            - 검증 조건 3 : 현재 공동구매 중인 식품은 추가할 수 없음
+    */
     fun addFoodToPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) =
         getCurrentPurchase(userPrincipal, refrigeratorId).let {
             if (entityFinder.getMember(userPrincipal.id, refrigeratorId).role != MemberRole.STAFF)
                 throw InvalidRoleException()
+            else if (purchaseRepository.existsByStatus(PurchaseStatus.ACTIVE) && getCurrentPurchase().proposedBy != userPrincipal.id)
+                throw AlreadyHaveActivePurchaseException()
             else if (purchaseProductRepository.findAllByPurchase(getCurrentPurchase())
                     .map { purchaseProduct -> purchaseProduct.product.food }
                     .contains(entityFinder.getFood(foodId))
@@ -58,8 +61,8 @@ class PurchaseService(
 
     /*
         [API] 공동구매 목록에서 특정 식품 삭제
-            - 검증 조건 1: 해당 공동구매를 올린 사람만 수정을 할 수 있음
-            - 검증 조건 2: 현재 공동구매에 존재하는 식품만 수정할 수 있음
+            - 검증 조건 1 : 해당 공동구매를 올린 사람만 삭제를 할 수 있음
+            - 검증 조건 2 : 현재 공동구매에 존재하는 식품만 삭제할 수 있음
     */
     fun updateFoodInPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id)
@@ -72,8 +75,8 @@ class PurchaseService(
 
     /*
         [API] 공동구매 목록에서 특정 식품 삭제
-            - 검증 조건 1: 해당 공동구매를 올린 사람만 삭제를 할 수 있음
-            - 검증 조건 2: 현재 공동구매에 존재하는 식품만 삭제할 수 있음
+            - 검증 조건 1 : 해당 공동구매를 올린 사람만 삭제를 할 수 있음
+            - 검증 조건 2 : 현재 공동구매에 존재하는 식품만 삭제할 수 있음
      */
     fun deleteFoodFromPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id)
@@ -99,11 +102,13 @@ class PurchaseService(
 
     /*
         [API] 현재 공동구매 목록에 대한 투표 시작
-            - 검증 조건 1: 공동구매를 신청한 회원 본인만 투표를 시작할 수 있음
-            - 검증 조건 2: STAFF 의 수가 1명인 경우, 투표 과정을 생략하고 현재 Purchase 의 status 를 FINISHED 로 변경
+            - 검증 조건 1 : 공동구매를 신청한 회원 본인만 투표를 시작할 수 있음
+            - 검증 조건 2 : 공동구매 목록에 물품이 존재하지 않는 경우, 투표를 시작할 수 없음
+            - 검증 조건 3 : STAFF 의 수가 1명인 경우, 투표 과정을 생략하고 현재 Purchase 의 status 를 FINISHED 로 변경
      */
     fun startVote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteRequest: VoteRequest) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id) throw InvalidRoleException()
+        else if (purchaseProductRepository.findAllByPurchase(getCurrentPurchase()).isEmpty()) throw UnableToStartVoteException()
         else if (getNumberOfStaff() == 1L) getCurrentPurchase().updateStatus(PurchaseStatus.FINISHED)
 
         voteRepository.save(
@@ -117,11 +122,11 @@ class PurchaseService(
 
     /*
         [API] 투표 실시
-            - 검증 조건 1: 관리자(STAFF)만 투표를 할 수 있음
-            - 검증 조건 2: 이미 투표한 경우, 투표 결과를 수정할 수 없음
-            - 검증 조건 3-1: 찬성에 투표한 경우, voters 에 해당 Member 객체를 add
-            - 검증 조건 3-2: 만장일치가 완성된 경우, 투표를 종료하고 현재 Purchase 의 status 를 FINISHED 로 변경
-            - 검증 조건 4: 반대에 투표한 경우, 투표를 종료하고 현재 Purchase 의 status 를 REJECTED 로 변경
+            - 검증 조건 1 : 관리자(STAFF)만 투표를 할 수 있음
+            - 검증 조건 2 : 이미 투표한 경우, 투표 결과를 수정할 수 없음
+            - 검증 조건 3-1 : 찬성에 투표한 경우, voters 에 해당 Member 객체를 add
+            - 검증 조건 3-2 : 만장일치가 완성된 경우, 투표를 종료하고 현재 Purchase 의 status 를 FINISHED 로 변경
+            - 검증 조건 4 : 반대에 투표한 경우, 투표를 종료하고 현재 Purchase 의 status 를 REJECTED 로 변경
      */
     fun vote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteId: Long, isAccepted: Boolean) =
         entityFinder.getMember(userPrincipal.id, refrigeratorId)

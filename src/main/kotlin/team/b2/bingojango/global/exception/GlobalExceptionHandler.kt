@@ -51,6 +51,11 @@ class GlobalExceptionHandler(
     fun handleInvalidRoleException(e: InvalidCredentialException) =
         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(getErrorResponse(HttpStatus.UNAUTHORIZED, e))
 
+    // 현재 진행 중인 공동구매가 존재
+    @ExceptionHandler(AlreadyHaveActivePurchaseException::class)
+    fun handleAlreadyHaveActivePurchaseException(e: AlreadyHaveActivePurchaseException) =
+        ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
     // 현재 진행 중인 공동구매 없음
     @ExceptionHandler(NoCurrentPurchaseException::class)
     fun handleNoCurrentPurchaseException(e: NoCurrentPurchaseException) =
@@ -59,6 +64,11 @@ class GlobalExceptionHandler(
     // 이미 공동구매 목록 안에 신청하고자 하는 식품이 존재
     @ExceptionHandler(AlreadyInPurchaseException::class)
     fun handleAlreadyInPurchaseException(e: AlreadyInPurchaseException) =
+        ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
+    // 공동구매 목록 안에 식품이 없는 상태에서 투표 시작
+    @ExceptionHandler(UnableToStartVoteException::class)
+    fun handleUnableToStartVoteException(e: UnableToStartVoteException) =
         ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
     // 중복 투표
