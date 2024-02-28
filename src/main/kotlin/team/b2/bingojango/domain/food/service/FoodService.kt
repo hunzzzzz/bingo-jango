@@ -1,5 +1,7 @@
 package team.b2.bingojango.domain.food.service
 
+import org.springframework.data.domain.Page
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.food.model.Food
@@ -12,8 +14,12 @@ import team.b2.bingojango.domain.purchase.repository.PurchaseRepository
 import team.b2.bingojango.domain.purchase_product.model.PurchaseProduct
 import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepository
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
+import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
 import team.b2.bingojango.domain.food.model.FoodCategory
+import team.b2.bingojango.domain.food.model.SortFood
+import team.b2.bingojango.domain.food.repository.FoodRepository
+import team.b2.bingojango.domain.purchase.service.PurchaseService
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import java.time.ZonedDateTime
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
@@ -151,4 +157,16 @@ class FoodService(
         productRepository.save(
             Product(food = food, refrigerator = refrigerator)
         )
+
+    //음식 검색 및 정렬
+    fun searchFood(
+        refrigeratorId: Long,
+        page: Int,
+        sort: SortFood?,
+        category: FoodCategory?,
+        count: Int?,
+        keyword: String?
+    ): Page<FoodResponse> {
+        return foodRepository.findByFood(refrigeratorId, page, sort, category, count, keyword).map { it.toResponse() }
+    }
 }

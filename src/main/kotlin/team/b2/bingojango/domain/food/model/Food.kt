@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.food.model
 
 import jakarta.persistence.*
+import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.entity.BaseEntity
 import java.time.ZonedDateTime
@@ -29,4 +30,13 @@ class Food(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "food_id", nullable = false)
     val id: Long? = null
+
+    fun toResponse(): FoodResponse {
+        return FoodResponse(
+            category = category,
+            name = name,
+            expirationDate = expirationDate,
+            count = count,
+        )
+    }
 }

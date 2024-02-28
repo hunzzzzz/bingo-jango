@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.spring") version "1.9.22"
     kotlin("plugin.jpa") version "1.9.22"
+    kotlin("kapt") version "1.8.22"
 }
 
 group = "team.b2"
@@ -18,6 +19,8 @@ java {
 repositories {
     mavenCentral()
 }
+
+val queryDslVersion = "5.0.0"
 
 dependencies {
     // DB
@@ -40,6 +43,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    // QueryDSL
+    implementation("com.querydsl:querydsl-jpa:$queryDslVersion:jakarta")
+    kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta")
 }
 
 tasks.withType<KotlinCompile> {
