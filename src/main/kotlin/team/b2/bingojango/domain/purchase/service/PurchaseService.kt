@@ -16,6 +16,7 @@ import team.b2.bingojango.domain.purchase_product.model.PurchaseProduct
 import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepository
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.vote.dto.request.VoteRequest
+import team.b2.bingojango.domain.vote.dto.response.VoteResponse
 import team.b2.bingojango.domain.vote.repository.VoteRepository
 import team.b2.bingojango.global.exception.cases.*
 import team.b2.bingojango.global.security.UserPrincipal
@@ -100,6 +101,17 @@ class PurchaseService(
                 )
             }
 
+    // [API] 현재 공동구매 목록에 대한 투표 현황 조회
+    fun showVote(refrigeratorId: Long, voteId: Long) =
+        VoteResponse.from(
+            vote = entityFinder.getVote(voteId),
+            member = entityFinder.getMember(
+                userId = getCurrentPurchase().proposedBy,
+                refrigeratorId = refrigeratorId
+            ),
+            numberOfStaff = getNumberOfStaff()
+        )
+
     /*
         [API] 현재 공동구매 목록에 대한 투표 시작
             - 검증 조건 1 : 공동구매를 신청한 회원 본인만 투표를 시작할 수 있음
@@ -108,7 +120,9 @@ class PurchaseService(
      */
     fun startVote(userPrincipal: UserPrincipal, refrigeratorId: Long, voteRequest: VoteRequest) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id) throw InvalidRoleException()
-        else if (purchaseProductRepository.findAllByPurchase(getCurrentPurchase()).isEmpty()) throw UnableToStartVoteException()
+        else if (purchaseProductRepository.findAllByPurchase(getCurrentPurchase())
+                .isEmpty()
+        ) throw UnableToStartVoteException()
         else if (getNumberOfStaff() == 1L) getCurrentPurchase().updateStatus(PurchaseStatus.FINISHED)
 
         voteRepository.save(

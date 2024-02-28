@@ -2,6 +2,7 @@ package team.b2.bingojango.domain.purchase.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
+import org.apache.coyote.Response
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -49,6 +50,14 @@ class PurchaseController(
         @PathVariable refrigeratorId: Long
     ) =
         purchaseService.showPurchase(refrigeratorId)
+
+    @Operation(summary = "현재 공동구매 목록에 대한 투표 현황 조회")
+    @GetMapping("/vote/{voteId}")
+    fun showVote(
+        @PathVariable refrigeratorId: Long,
+        @PathVariable voteId: Long
+    ) =
+        ResponseEntity.ok().body(purchaseService.showVote(refrigeratorId, voteId))
 
     @Operation(summary = "현재 공동구매 목록에 대한 투표 시작")
     @PostMapping("/vote")
