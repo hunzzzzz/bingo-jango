@@ -17,7 +17,7 @@ class RefrigeratorController(
     private val refrigeratorService: RefrigeratorService
 ) {
     @Operation(summary = "냉장고 목록 조회")
-    @PreAuthorize("isAuthenticated")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     fun getRefrigerator(
         @AuthenticationPrincipal userPrincipal: UserPrincipal
@@ -28,7 +28,7 @@ class RefrigeratorController(
     }
 
     @Operation(summary = "신규 냉장고 생성")
-    @PreAuthorize("isAuthenticated")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     fun addRefrigerator(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
@@ -41,7 +41,7 @@ class RefrigeratorController(
     }
 
     @Operation(summary = "기존 냉장고 참여")
-    @PreAuthorize("isAuthenticated")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping
     fun joinRefrigerator(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
