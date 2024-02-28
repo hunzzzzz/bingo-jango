@@ -14,6 +14,7 @@ import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepo
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.exception.cases.AlreadyInPurchaseException
 import team.b2.bingojango.global.exception.cases.InvalidRoleException
+import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.exception.cases.NoCurrentPurchaseException
 import team.b2.bingojango.global.security.UserPrincipal
 import team.b2.bingojango.global.util.EntityFinder
@@ -44,11 +45,28 @@ class FoodService(
                 PurchaseProduct(
                     count = count,
                     purchase = it,
-                    product = getProduct(foodId, refrigeratorId)
+                    product = getProduct(foodId, refrigeratorId),
+                    refrigerator = entityFinder.getRefrigerator(refrigeratorId)
                 )
             )
             "${entityFinder.getFood(foodId).name} ${count}개가 공동구매 신청되었습니다." // TODO: 추후 분리 예정
         }
+
+    /*
+        [API] 공동구매 목록에서 특정 식품 삭제
+            - 검증 조건 1: 해당 공동구매를 올린 사람만 삭제를 할 수 있음
+            - 검증 조건 2: 현재 공동구매에 존재하는 식품만 삭제할 수 있음
+     */
+    fun deleteFoodFromPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long) {
+        if (getCurrentPurchase().proposedBy != userPrincipal.id)
+            throw InvalidRoleException()
+        purchaseProductRepository.delete(
+            purchaseProductRepository.findByRefrigeratorAndProduct(
+                refrigerator = entityFinder.getRefrigerator(refrigeratorId),
+                product = getProduct(foodId, refrigeratorId)
+            ) ?: throw ModelNotFoundException("식품")
+        )
+    }
 
     // [내부 메서드] 현재 진행 중인(status 가 ACTIVE 한) Purchase 를 리턴 (없으면 예외 처리)
     private fun getCurrentPurchase() =

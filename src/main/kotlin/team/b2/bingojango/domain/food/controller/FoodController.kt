@@ -3,6 +3,7 @@ package team.b2.bingojango.domain.food.controller
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,4 +26,13 @@ class FoodController(
         @RequestParam count: Int
     ) =
         ResponseEntity.ok().body(foodService.addFoodToPurchase(userPrincipal, refrigeratorId, foodId, count))
+
+    @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
+    @DeleteMapping("/{foodId}")
+    fun deleteFoodFromPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable foodId: Long
+    ) =
+        ResponseEntity.ok().body(foodService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
 }
