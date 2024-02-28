@@ -5,7 +5,7 @@ import team.b2.bingojango.global.entity.BaseEntity
 
 @Entity
 @Table(name = "Users")
-class User(
+data class User(
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     val role: UserRole = UserRole.USER,
@@ -13,13 +13,13 @@ class User(
     @Column(name = "name", nullable = false)
     val name: String,
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "nickname", nullable = false, unique = true) // 중복 불가능)
     val nickname: String,
 
     @Column(name = "phone", nullable = false)
     val phone: String,
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true) // 중복 불가능)
     val email: String,
 
     @Column(name = "password", nullable = false)
