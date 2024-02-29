@@ -9,7 +9,7 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 @Table(name = "Purchase_Product")
 class PurchaseProduct(
     @Column(name = "count", nullable = false)
-    val count: Int,
+    var count: Int,
 
     @ManyToOne
     @JoinColumn(name = "purchase_id")
@@ -27,4 +27,8 @@ class PurchaseProduct(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "purchase_product_id")
     val id: Long? = null
+
+    fun updateCount(count: Int) {
+        this.count = count
+    }
 }

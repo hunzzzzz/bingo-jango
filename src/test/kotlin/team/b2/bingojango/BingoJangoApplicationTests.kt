@@ -68,7 +68,8 @@ class BingoJangoApplicationTests {
                 category = FoodCategory.FRUIT,
                 name = "사과",
                 expirationDate = ZonedDateTime.now().plusDays(7),
-                refrigerator = refrigeratorRepository.findByIdOrNull(1) ?: throw Exception("")
+                refrigerator = refrigeratorRepository.findByIdOrNull(1) ?: throw Exception(""),
+                count = 10
             )
         )
 
@@ -77,7 +78,8 @@ class BingoJangoApplicationTests {
                 category = FoodCategory.DRINK,
                 name = "우유",
                 expirationDate = ZonedDateTime.now().plusDays(3),
-                refrigerator = refrigeratorRepository.findByIdOrNull(1) ?: throw Exception("")
+                refrigerator = refrigeratorRepository.findByIdOrNull(1) ?: throw Exception(""),
+                count = 5
             )
         )
     }

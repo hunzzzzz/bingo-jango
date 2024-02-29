@@ -28,6 +28,8 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+    // SLACK
+    implementation("com.slack.api:slack-api-client:1.38.1")
     // SWAGGER
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     // TEST
@@ -35,6 +37,8 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     // VALIDATION
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    // WEBSOCKET
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     // WEB
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

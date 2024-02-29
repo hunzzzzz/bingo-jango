@@ -2,16 +2,10 @@ package team.b2.bingojango.domain.purchase.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
+import org.apache.coyote.Response
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.purchase.service.PurchaseService
 import team.b2.bingojango.domain.vote.dto.request.VoteRequest
 import team.b2.bingojango.global.security.UserPrincipal
@@ -21,12 +15,49 @@ import team.b2.bingojango.global.security.UserPrincipal
 class PurchaseController(
     private val purchaseService: PurchaseService
 ) {
+    @Operation(summary = "특정 식품에 대한 공동구매 신청")
+    @PostMapping("/foods/{foodId}")
+    fun addFoodToPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable foodId: Long,
+        @RequestParam count: Int
+    ) =
+        ResponseEntity.ok().body(purchaseService.addFoodToPurchase(userPrincipal, refrigeratorId, foodId, count))
+
+    @Operation(summary = "공동구매 목록에 포함된 식품의 개수 수정")
+    @PutMapping("/foods/{foodId}")
+    fun updateFoodInPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable foodId: Long,
+        @RequestParam count: Int
+    ) =
+        ResponseEntity.ok().body(purchaseService.updateFoodInPurchase(userPrincipal, refrigeratorId, foodId, count))
+
+    @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
+    @DeleteMapping("/foods/{foodId}")
+    fun deleteFoodFromPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable foodId: Long
+    ) =
+        ResponseEntity.ok().body(purchaseService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
+
     @Operation(summary = "현재 공동구매 목록을 출력")
     @GetMapping
     fun showPurchase(
         @PathVariable refrigeratorId: Long
     ) =
         purchaseService.showPurchase(refrigeratorId)
+
+    @Operation(summary = "현재 공동구매 목록에 대한 투표 현황 조회")
+    @GetMapping("/vote/{voteId}")
+    fun showVote(
+        @PathVariable refrigeratorId: Long,
+        @PathVariable voteId: Long
+    ) =
+        ResponseEntity.ok().body(purchaseService.showVote(refrigeratorId, voteId))
 
     @Operation(summary = "현재 공동구매 목록에 대한 투표 시작")
     @PostMapping("/vote")
