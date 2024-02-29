@@ -7,16 +7,29 @@ import org.springframework.http.ResponseEntity
 import team.b2.bingojango.domain.food.service.FoodService
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.food.dto.FoodResponse
+import team.b2.bingojango.global.security.UserPrincipal
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
+
 
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/foods")
 class FoodController(
     private val foodService: FoodService
 ) {
+
+    @GetMapping
+    fun getFood(
+            @PathVariable refrigeratorId: Long
+    ): ResponseEntity<List<FoodResponse>>{
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(foodService.getFood(refrigeratorId))
+    }
+
     @PostMapping
     fun addFood(
         @PathVariable refrigeratorId: Long,
