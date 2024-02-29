@@ -7,13 +7,8 @@ import team.b2.bingojango.domain.food.service.FoodService
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import team.b2.bingojango.domain.food.service.FoodService
+import org.springframework.web.bind.annotation.*
+import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.global.security.UserPrincipal
 
 @RestController
@@ -21,6 +16,16 @@ import team.b2.bingojango.global.security.UserPrincipal
 class FoodController(
     private val foodService: FoodService
 ) {
+
+    @GetMapping
+    fun getFood(
+            @PathVariable refrigeratorId: Long
+    ): ResponseEntity<List<FoodResponse>>{
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(foodService.getFood(refrigeratorId))
+    }
+
     @PostMapping
     fun addFood(
             @PathVariable refrigeratorId: Long,
