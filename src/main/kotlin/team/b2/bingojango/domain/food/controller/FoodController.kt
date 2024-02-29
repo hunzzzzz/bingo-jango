@@ -7,12 +7,10 @@ import org.springframework.http.ResponseEntity
 import team.b2.bingojango.domain.food.service.FoodService
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
-import team.b2.bingojango.global.security.UserPrincipal
 
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/foods")
@@ -56,25 +54,6 @@ class FoodController(
         foodService.deleteFood(refrigeratorId, foodId)
         return ResponseEntity.noContent().build()
     }
-
-    @Operation(summary = "특정 식품에 대한 공동구매 신청")
-    @PostMapping("/{foodId}")
-    fun addFoodToPurchase(
-        @AuthenticationPrincipal userPrincipal: UserPrincipal,
-        @PathVariable refrigeratorId: Long,
-        @PathVariable foodId: Long,
-        @RequestParam count: Int
-    ) =
-        ResponseEntity.ok().body(foodService.addFoodToPurchase(userPrincipal, refrigeratorId, foodId, count))
-
-//    @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
-//    @DeleteMapping("/{foodId}")
-//    fun deleteFoodFromPurchase(
-//        @AuthenticationPrincipal userPrincipal: UserPrincipal,
-//        @PathVariable refrigeratorId: Long,
-//        @PathVariable foodId: Long
-//    ) =
-//        ResponseEntity.ok().body(foodService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
 
     @Operation(summary = "냉장고의 음식 검색 및 정렬")
     @GetMapping
