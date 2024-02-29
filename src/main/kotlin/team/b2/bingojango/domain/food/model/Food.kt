@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.entity.BaseEntity
+import team.b2.bingojango.global.util.ZonedDateTimeConverter
 import java.time.ZonedDateTime
 
 @Entity
@@ -33,9 +34,9 @@ class Food(
 
     fun toResponse(): FoodResponse {
         return FoodResponse(
-            category = category,
+            category = category.name,
             name = name,
-            expirationDate = expirationDate,
+            expirationDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(expirationDate),
             count = count,
         )
     }

@@ -56,7 +56,7 @@ class FoodController(
     }
 
     @Operation(summary = "냉장고의 음식 검색 및 정렬")
-    @GetMapping
+    @GetMapping("/search")
     fun searchFood(
         @PathVariable refrigeratorId: Long,
         @RequestParam

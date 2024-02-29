@@ -16,7 +16,6 @@ import team.b2.bingojango.global.querydsl.QueryDslSupport
 class FoodRepositoryImpl: QueryDslSupport(), CustomFoodRepository {
 
     private val food = QFood.food
-
     override fun findByFood(
         refrigeratorId: Long,
         page: Int,
