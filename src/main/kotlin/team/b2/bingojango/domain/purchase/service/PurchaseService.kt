@@ -1,5 +1,6 @@
 package team.b2.bingojango.domain.purchase.service
 
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.food.model.Food
@@ -90,16 +91,54 @@ class PurchaseService(
         )
     }
 
-    // [API] 현재 진행 중인 Purchase 목록을 출력
+    // [API] 현재 진행 중인 Purchase 를 출력
     fun showPurchase(refrigeratorId: Long) =
         getCurrentPurchase()
             .let {
                 PurchaseResponse.from(
+                    purchase = it,
                     member = entityFinder.getMember(it.proposedBy, refrigeratorId),
                     purchaseProductList = purchaseProductRepository.findAllByPurchase(it)
                         .map { purchaseProduct -> PurchaseProductResponse.from(purchaseProduct) }
                 )
             }
+
+    // [API] 현재까지 진행된 모든 Purchase 목록을 출력
+    fun showPurchaseList(refrigeratorId: Long) =
+        purchaseRepository.findAll().map {
+            PurchaseResponse.from(
+                purchase = it,
+                member = entityFinder.getMember(it.proposedBy, refrigeratorId),
+                purchaseProductList = purchaseProductRepository.findAllByPurchase(it)
+                    .map { purchaseProduct -> PurchaseProductResponse.from(purchaseProduct) }
+            )
+        }
+
+    /*
+        [API] 이전 공동구매와 같은 PurchaseProduct 가 담긴 새로운 Purchase 를 생성
+            - 검증 조건 1 : 관리자(STAFF)만 공동구매를 신청할 수 있음
+            - 검증 조건 2 : 이미 진행 중인 공동구매가 있는 경우 신청할 수 없음
+     */
+    fun copyPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, purchaseId: Long) {
+        if (entityFinder.getMember(userPrincipal.id, refrigeratorId).role != MemberRole.STAFF)
+            throw InvalidRoleException()
+        else if (purchaseRepository.existsByStatus(PurchaseStatus.ACTIVE))
+            throw AlreadyHaveActivePurchaseException()
+
+        val currentPurchase = purchaseRepository.findByIdOrNull(purchaseId) ?: throw ModelNotFoundException("공동구매")
+        val newPurchase = makePurchase(userPrincipal, entityFinder.getRefrigerator(refrigeratorId))
+
+        purchaseProductRepository.findAllByPurchase(currentPurchase).forEach {
+            purchaseProductRepository.save(
+                PurchaseProduct(
+                    count = it.count,
+                    purchase = newPurchase,
+                    product = it.product,
+                    refrigerator = it.refrigerator
+                )
+            )
+        }
+    }
 
     // [API] 현재 공동구매 목록에 대한 투표 현황 조회
     fun showVote(refrigeratorId: Long, voteId: Long) =
