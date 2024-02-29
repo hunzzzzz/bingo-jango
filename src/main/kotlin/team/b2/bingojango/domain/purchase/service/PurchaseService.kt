@@ -37,6 +37,7 @@ class PurchaseService(
             - 검증 조건 1 : 관리자(STAFF)만 공동구매를 신청할 수 있음
             - 검증 조건 2 : 다른 관리자가 시작한 공동구매가 있는 경우 신청할 수 없음
             - 검증 조건 3 : 현재 공동구매 중인 식품은 추가할 수 없음
+            - 검증 조건 4 : 이미 투표가 시작된 공동구매에 식품을 추가할 수 없음
     */
     fun addFoodToPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) =
         getCurrentPurchase(userPrincipal, refrigeratorId).let {
@@ -48,6 +49,11 @@ class PurchaseService(
                     .map { purchaseProduct -> purchaseProduct.product.food }
                     .contains(entityFinder.getFood(foodId))
             ) throw AlreadyInPurchaseException()
+            else if (voteRepository.existsByPurchaseAndRefrigerator(
+                    purchase = getCurrentPurchase(),
+                    refrigerator = entityFinder.getRefrigerator(refrigeratorId)
+                )
+            ) throw AlreadyOnVoteException("추가")
 
             purchaseProductRepository.save(
                 PurchaseProduct(
@@ -61,13 +67,20 @@ class PurchaseService(
         }
 
     /*
-        [API] 공동구매 목록에서 특정 식품 삭제
-            - 검증 조건 1 : 해당 공동구매를 올린 사람만 삭제를 할 수 있음
-            - 검증 조건 2 : 현재 공동구매에 존재하는 식품만 삭제할 수 있음
+        [API] 공동구매 목록에서 특정 식품 개수 수정
+            - 검증 조건 1 : 해당 공동구매를 올린 사람만 수정을 할 수 있음
+            - 검증 조건 2 : 현재 공동구매에 존재하는 식품만 수정할 수 있음
+            - 검증 조건 3 : 이미 투표가 시작된 공동구매에 식품을 수정할 수 없음
     */
     fun updateFoodInPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id)
             throw InvalidRoleException()
+        else if (voteRepository.existsByPurchaseAndRefrigerator(
+                purchase = getCurrentPurchase(),
+                refrigerator = entityFinder.getRefrigerator(refrigeratorId)
+            )
+        ) throw AlreadyOnVoteException("삭제")
+
         (purchaseProductRepository.findByRefrigeratorAndProduct(
             refrigerator = entityFinder.getRefrigerator(refrigeratorId),
             product = getProduct(foodId, refrigeratorId)
@@ -78,10 +91,17 @@ class PurchaseService(
         [API] 공동구매 목록에서 특정 식품 삭제
             - 검증 조건 1 : 해당 공동구매를 올린 사람만 삭제를 할 수 있음
             - 검증 조건 2 : 현재 공동구매에 존재하는 식품만 삭제할 수 있음
+            - 검증 조건 3 : 이미 투표가 시작된 공동구매에 식품을 삭제할 수 없음
      */
     fun deleteFoodFromPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long) {
         if (getCurrentPurchase().proposedBy != userPrincipal.id)
             throw InvalidRoleException()
+        else if (voteRepository.existsByPurchaseAndRefrigerator(
+                purchase = getCurrentPurchase(),
+                refrigerator = entityFinder.getRefrigerator(refrigeratorId)
+            )
+        ) throw AlreadyOnVoteException("삭제")
+
         purchaseProductRepository.delete(
             purchaseProductRepository.findByRefrigeratorAndProduct(
                 refrigerator = entityFinder.getRefrigerator(refrigeratorId),
@@ -129,7 +149,8 @@ class PurchaseService(
             voteRequest.to(
                 request = voteRequest,
                 refrigerator = entityFinder.getRefrigerator(refrigeratorId),
-                member = entityFinder.getMember(userPrincipal.id, refrigeratorId)
+                member = entityFinder.getMember(userPrincipal.id, refrigeratorId),
+                purchase = getCurrentPurchase()
             )
         )
     }
