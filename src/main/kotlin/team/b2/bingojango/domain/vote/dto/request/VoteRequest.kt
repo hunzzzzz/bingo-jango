@@ -3,6 +3,7 @@ package team.b2.bingojango.domain.vote.dto.request
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import team.b2.bingojango.domain.member.model.Member
+import team.b2.bingojango.domain.purchase.model.Purchase
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.vote.model.Vote
 import team.b2.bingojango.global.util.ZonedDateTimeConverter
@@ -17,10 +18,11 @@ data class VoteRequest(
     )
     val dueDate: String,
 ) {
-    fun to(request: VoteRequest, refrigerator: Refrigerator, member: Member) = Vote(
+    fun to(request: VoteRequest, refrigerator: Refrigerator, member: Member, purchase: Purchase) = Vote(
         description = request.description,
         dueDate = ZonedDateTimeConverter.convertStringDateTimeFromZonedDateTime(request.dueDate),
         refrigerator = refrigerator,
-        voters = mutableSetOf(member)
+        voters = mutableSetOf(member),
+        purchase = purchase
     )
 }
