@@ -29,7 +29,7 @@ class Vote(
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "food_id", nullable = false)
+    @Column(name = "vote_id", nullable = false)
     val id: Long? = null
 
     fun updateVote(member: Member) {

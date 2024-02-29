@@ -17,6 +17,16 @@ import team.b2.bingojango.domain.food.model.SortFood
 class FoodController(
     private val foodService: FoodService
 ) {
+
+    @GetMapping
+    fun getFood(
+            @PathVariable refrigeratorId: Long
+    ): ResponseEntity<List<FoodResponse>>{
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(foodService.getFood(refrigeratorId))
+    }
+
     @PostMapping
     fun addFood(
         @PathVariable refrigeratorId: Long,
