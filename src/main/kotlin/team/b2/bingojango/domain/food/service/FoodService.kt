@@ -50,7 +50,7 @@ class FoodService(
         //테스트 시 오류나면 refrigeratorId가 아니라 findRefrigerator 로 변경해보기
         val existsFood = foodRepository.existsByRefrigeratorIdAndName(refrigeratorId, request.name)
         if (existsFood) {
-            throw AlreadyExistsException("음식")
+            throw AlreadyExistsFoodException()
         }
         val newFood = Food(
                 category = request.category,
@@ -75,7 +75,7 @@ class FoodService(
         if (findFood.name != request.name) {
             val existsFoodName = foodRepository.existsByRefrigeratorIdAndName(refrigeratorId, request.name)
             if (existsFoodName) {
-                throw AlreadyExistsException("음식")
+                throw AlreadyExistsFoodException()
             }
         }
         findFood.category = FoodCategory.valueOf(request.category)

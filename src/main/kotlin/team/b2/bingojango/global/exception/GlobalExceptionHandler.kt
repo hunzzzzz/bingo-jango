@@ -87,8 +87,8 @@ class GlobalExceptionHandler(
                     )
             )
 
-    @ExceptionHandler(AlreadyExistsException::class)
-    fun handleAlreadyExistsException(e: AlreadyExistsException) =
+    @ExceptionHandler(AlreadyExistsFoodException::class)
+    fun handleAlreadyExistsFoodException(e: AlreadyExistsFoodException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
     private fun getErrorResponse(httpStatus: HttpStatus, e: Exception) = when (httpStatus) {
