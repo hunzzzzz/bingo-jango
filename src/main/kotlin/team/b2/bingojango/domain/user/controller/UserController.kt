@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.user.dto.request.EditRequest
 import team.b2.bingojango.domain.user.dto.request.LoginRequest
 import team.b2.bingojango.domain.user.dto.request.PasswordRequest
+import team.b2.bingojango.domain.user.dto.request.SignUpRequest
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.UserPrincipal
 
@@ -40,6 +42,17 @@ class UserController(
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
             .build()
+    }
+
+    //회원가입
+    @PostMapping("/signup")
+    fun signUp(
+        @RequestBody signUpRequest: SignUpRequest
+    ): ResponseEntity<SignUpResponse> {
+        val signUpResponse = userService.signUp(signUpRequest)
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(signUpResponse)
     }
 
     // 프로필 수정
