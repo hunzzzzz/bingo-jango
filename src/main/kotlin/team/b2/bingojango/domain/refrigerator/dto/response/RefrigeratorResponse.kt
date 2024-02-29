@@ -1,4 +1,4 @@
-package team.b2.bingojango.domain.refrigerator.dto
+package team.b2.bingojango.domain.refrigerator.dto.response
 
 data class RefrigeratorResponse (
     val id: Long,

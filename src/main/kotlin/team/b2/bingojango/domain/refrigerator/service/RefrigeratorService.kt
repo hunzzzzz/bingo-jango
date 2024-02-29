@@ -4,10 +4,13 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.chatroom.service.ChatRoomService
+import team.b2.bingojango.domain.mail.repository.MailRepository
 import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.domain.member.repository.MemberRepository
-import team.b2.bingojango.domain.refrigerator.dto.RefrigeratorRequest
-import team.b2.bingojango.domain.refrigerator.dto.RefrigeratorResponse
+import team.b2.bingojango.domain.refrigerator.dto.request.AddRefrigeratorRequest
+import team.b2.bingojango.domain.refrigerator.dto.request.JoinByInvitationCodeRequest
+import team.b2.bingojango.domain.refrigerator.dto.request.JoinByPasswordRequest
+import team.b2.bingojango.domain.refrigerator.dto.response.RefrigeratorResponse
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
@@ -20,6 +23,7 @@ class RefrigeratorService(
     private val memberRepository: MemberRepository,
     private val userRepository: UserRepository,
     private val chatRoomService: ChatRoomService,
+    private val mailRepository: MailRepository,
 ) {
     //냉장고 목록 조회
     fun getRefrigerator(userPrincipal: UserPrincipal): List<RefrigeratorResponse> {
@@ -29,7 +33,7 @@ class RefrigeratorService(
 
     //신규 냉장고 생성
     @Transactional
-    fun addRefrigerator(userPrincipal: UserPrincipal, request: RefrigeratorRequest): RefrigeratorResponse {
+    fun addRefrigerator(userPrincipal: UserPrincipal, request: AddRefrigeratorRequest): RefrigeratorResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
         val chatRoom = chatRoomService.buildChatRoom(refrigerator, userPrincipal)
@@ -37,20 +41,30 @@ class RefrigeratorService(
         return refrigerator.toResponse()
     }
 
-    //기존 냉장고 참여
+    //기존 냉장고 참여 - 비밀번호 이용
     @Transactional
-    fun joinRefrigerator(userPrincipal: UserPrincipal, request: RefrigeratorRequest): RefrigeratorResponse {
+    fun joinRefrigeratorByPassword(userPrincipal: UserPrincipal, request: JoinByPasswordRequest): RefrigeratorResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
-
         //확인사항1: 냉장고 존재 유무
-        val refrigerator =
-            refrigeratorRepository.findByName(request.name) ?: throw ModelNotFoundException("Refrigerator")
-
+        val refrigerator = refrigeratorRepository.findByName(request.name) ?: throw ModelNotFoundException("Refrigerator")
         //확인사항2: 비밀번호 일치 여부
-        if (refrigerator.password == request.password) {
-            val chatRoom = chatRoomService.getChatRoom(refrigerator)
-            memberRepository.save(Member.toEntity(user, refrigerator, chatRoom))
-        } else throw IllegalArgumentException("냉장고의 비밀번호가 일치하지 않습니다.")
+        if (refrigerator.password != request.password) throw IllegalArgumentException("냉장고의 비밀번호가 일치하지 않습니다.")
+
+        val chatRoom = chatRoomService.getChatRoom(refrigerator)
+        memberRepository.save(Member.toEntity(user, refrigerator, chatRoom))
+
+        return refrigerator.toResponse()
+    }
+
+    //기존 냉장고 참여 - 초대코드 이용
+    @Transactional
+    fun joinRefrigeratorByInvitationCode(userPrincipal: UserPrincipal, request: JoinByInvitationCodeRequest): RefrigeratorResponse {
+        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        val mail = mailRepository.findByCode(request.invitationCode) ?: throw ModelNotFoundException("Mail")
+        val refrigerator = mail.refrigerator
+        val chatRoom = chatRoomService.getChatRoom(refrigerator)
+
+        memberRepository.save(Member.toEntity(user, refrigerator, chatRoom))
 
         return refrigerator.toResponse()
     }
