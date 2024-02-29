@@ -1,5 +1,6 @@
 package team.b2.bingojango.domain.purchase.service
 
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.food.model.Food
@@ -106,11 +107,12 @@ class PurchaseService(
         )
     }
 
-    // [API] 현재 진행 중인 Purchase 목록을 출력
+    // [API] 현재 진행 중인 Purchase 를 출력
     fun showPurchase(refrigeratorId: Long) =
         getCurrentPurchase()
             .let {
                 PurchaseResponse.from(
+                    purchase = it,
                     member = entityFinder.getMember(it.proposedBy, refrigeratorId),
                     purchaseProductList = purchaseProductRepository.findAllByPurchase(it)
                         .map { purchaseProduct -> PurchaseProductResponse.from(purchaseProduct) }

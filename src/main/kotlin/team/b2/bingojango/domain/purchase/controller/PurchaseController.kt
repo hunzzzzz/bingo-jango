@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.purchase.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -41,7 +42,7 @@ class PurchaseController(
     ) =
         ResponseEntity.ok().body(purchaseService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
 
-    @Operation(summary = "현재 공동구매 목록을 출력")
+    @Operation(summary = "현재 진행 중인 공동구매를 출력")
     @GetMapping
     fun showPurchase(
         @PathVariable refrigeratorId: Long
