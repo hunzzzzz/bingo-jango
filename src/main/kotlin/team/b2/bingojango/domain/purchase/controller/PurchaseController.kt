@@ -2,7 +2,6 @@ package team.b2.bingojango.domain.purchase.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
-import org.apache.coyote.Response
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -44,12 +43,26 @@ class PurchaseController(
     ) =
         ResponseEntity.ok().body(purchaseService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
 
-    @Operation(summary = "현재 공동구매 목록을 출력")
+    @Operation(summary = "현재 진행 중인 공동구매를 출력")
     @GetMapping
     fun showPurchase(
         @PathVariable refrigeratorId: Long
     ) =
         purchaseService.showPurchase(refrigeratorId)
+
+    @Operation(summary = "현재까지 진행된 모든 공동구매 목록을 출력")
+    @GetMapping("/all")
+    fun showPurchaseList(
+        @PathVariable refrigeratorId: Long
+    ) = purchaseService.showPurchaseList(refrigeratorId)
+
+    @Operation(summary = "완료/거절된 이전 공동구매를 선택 후 똑같은 내용의 공동구매 생성")
+    @PostMapping("/{purchaseId}")
+    fun copyPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable purchaseId: Long
+    ) = purchaseService.copyPurchase(userPrincipal, refrigeratorId, purchaseId)
 
     @Operation(summary = "현재 공동구매 목록에 대한 투표 현황 조회")
     @GetMapping("/vote/{voteId}")
