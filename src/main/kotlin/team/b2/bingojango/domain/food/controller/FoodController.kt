@@ -1,5 +1,7 @@
 package team.b2.bingojango.domain.food.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import team.b2.bingojango.domain.food.service.FoodService
@@ -9,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.domain.food.model.FoodCategory
+import team.b2.bingojango.domain.food.model.SortFood
 
 
 @RestController
@@ -62,5 +66,21 @@ class FoodController(
     ): ResponseEntity<Unit> {
         foodService.deleteFood(refrigeratorId, foodId)
         return ResponseEntity.noContent().build()
+    }
+
+    @Operation(summary = "냉장고의 음식 검색 및 정렬")
+    @GetMapping
+    fun searchFood(
+        @PathVariable refrigeratorId: Long,
+        @RequestParam
+            (defaultValue = "0") page: Int,
+        sort: SortFood?,
+        category: FoodCategory?,
+        count: Int?,
+        keyword: String
+    ): ResponseEntity<Page<FoodResponse>> {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(foodService.searchFood(refrigeratorId, page, sort, category, count, keyword))
     }
 }

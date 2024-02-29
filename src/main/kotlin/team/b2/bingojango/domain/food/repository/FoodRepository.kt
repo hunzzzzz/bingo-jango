@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository
 import team.b2.bingojango.domain.food.model.Food
 
 @Repository
-interface FoodRepository : JpaRepository<Food, Long> {
+interface FoodRepository : JpaRepository<Food, Long>, CustomFoodRepository {
     fun existsByRefrigeratorIdAndName(refrigeratorId: Long, name: String): Boolean
 }
+

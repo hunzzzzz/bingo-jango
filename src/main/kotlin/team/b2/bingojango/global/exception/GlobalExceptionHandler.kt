@@ -71,6 +71,11 @@ class GlobalExceptionHandler(
     fun handleUnableToStartVoteException(e: UnableToStartVoteException) =
         ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
+    // 투표가 이미 진행 중인 공동구매에 대한 식품 추가/수정/삭제 시도
+    @ExceptionHandler(AlreadyOnVoteException::class)
+    fun handleAlreadyOnVoteException(e: AlreadyOnVoteException) =
+        ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
     // 중복 투표
     @ExceptionHandler(DuplicatedVoteException::class)
     fun handleDuplicatedVoteException(e: DuplicatedVoteException) =
