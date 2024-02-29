@@ -7,13 +7,10 @@ import org.springframework.http.ResponseEntity
 import team.b2.bingojango.domain.food.service.FoodService
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.food.dto.FoodResponse
-import team.b2.bingojango.global.security.UserPrincipal
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
-
 
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/foods")
@@ -69,7 +66,7 @@ class FoodController(
     }
 
     @Operation(summary = "냉장고의 음식 검색 및 정렬")
-    @GetMapping
+    @GetMapping("/search")
     fun searchFood(
         @PathVariable refrigeratorId: Long,
         @RequestParam
