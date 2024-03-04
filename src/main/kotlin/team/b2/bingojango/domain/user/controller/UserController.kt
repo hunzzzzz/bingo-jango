@@ -14,6 +14,7 @@ import team.b2.bingojango.domain.user.dto.request.PasswordRequest
 import team.b2.bingojango.domain.user.dto.request.SignUpRequest
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
+import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.UserPrincipal
 
@@ -53,6 +54,17 @@ class UserController(
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(signUpResponse)
+    }
+
+    //회원조회
+    @GetMapping("/users/{userId}")
+    fun getUser(
+            @PathVariable userId: Long
+    ): ResponseEntity<UserResponse>{
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userService.getUser(userId))
+
     }
 
     // 프로필 수정

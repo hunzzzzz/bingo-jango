@@ -13,4 +13,6 @@ interface MemberRepository : JpaRepository<Member, Long> {
     fun findByUserAndRefrigerator(user: User, refrigerator: Refrigerator): Member?
 
     fun findAllByRefrigerator(refrigerator: Refrigerator): List<Member>
+
+    fun findAllByUserId(userId: Long): List<Member>
 }
