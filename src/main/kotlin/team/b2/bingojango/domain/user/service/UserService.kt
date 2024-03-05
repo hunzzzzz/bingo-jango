@@ -13,6 +13,7 @@ import team.b2.bingojango.domain.user.dto.request.LoginRequest
 import team.b2.bingojango.domain.user.dto.request.PasswordRequest
 import team.b2.bingojango.domain.user.dto.request.SignUpRequest
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.model.User
@@ -152,11 +153,35 @@ class UserService(
         return savedUser.id ?: throw IllegalStateException("Failed to create user")
     }
 
+    //로그인한 본인 프로필 보기
     @Transactional
-    fun getUser(userId: Long): UserResponse {
-        val user = userRepository.findByIdOrNull(userId) ?: throw ModelNotFoundException("User")
-        return UserResponse(
+    fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
+        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("Id")
+        return MyProfileResponse(
                 name = user.name,
+                nickname = user.nickname,
+                email = user.email,
+                phone = user.phone,
+                refrigerators = memberRepository.findAllByUserId(user.id!!).map { it.refrigerator.toResponse() },
+                createdAt = user.createdAt
+        )
+    }
+
+    /*
+        리턴값이 MyProfileResponse가 될수도 있고, UserResponse가 될 수도 있음
+        '상속' 개념을 사용해서
+        상위 개념(UserResponse) - 하위 개념(MyProfileResponse)
+     */
+
+    //타인 프로필 보기
+    //본인 아이디랑 받아온 아이디 같으면 내 프로필보기로 넘기기
+    @Transactional
+    fun getUser(userId: Long, userPrincipal: UserPrincipal): UserResponse {
+        val user = userRepository.findByIdOrNull(userId) ?: throw ModelNotFoundException("userId")
+        if (userId == userPrincipal.id) {
+            return getMyProfile(userPrincipal) // MyProfileResponse도 UserResponse의 한 종류니까 오류가 발생하지 않음
+        }
+        return UserResponse(
                 nickname = user.nickname,
                 email = user.email,
                 refrigerators = memberRepository.findAllByUserId(userId).map { it.refrigerator.toResponse() },
