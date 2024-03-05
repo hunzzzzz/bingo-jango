@@ -3,7 +3,7 @@ package team.b2.bingojango.domain.refrigerator.service
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import team.b2.bingojango.domain.chatroom.service.ChatRoomService
+import team.b2.bingojango.domain.chatting.service.ChatRoomService
 import team.b2.bingojango.domain.mail.repository.MailRepository
 import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.domain.member.repository.MemberRepository

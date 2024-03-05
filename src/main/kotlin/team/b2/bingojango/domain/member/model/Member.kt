@@ -1,7 +1,7 @@
 package team.b2.bingojango.domain.member.model
 
 import jakarta.persistence.*
-import team.b2.bingojango.domain.chatroom.model.ChatRoom
+import team.b2.bingojango.domain.chatting.model.ChatRoom
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.user.model.User
 
