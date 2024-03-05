@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security
+package team.b2.bingojango.global.security.util
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

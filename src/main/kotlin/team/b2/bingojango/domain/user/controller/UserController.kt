@@ -18,7 +18,7 @@ import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController

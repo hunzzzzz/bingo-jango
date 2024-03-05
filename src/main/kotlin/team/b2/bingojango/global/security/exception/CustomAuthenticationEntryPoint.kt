@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security
+package team.b2.bingojango.global.security.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletRequest

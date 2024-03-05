@@ -5,13 +5,8 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.food.model.Food
-import team.b2.bingojango.domain.member.model.MemberRole
-import team.b2.bingojango.domain.product.model.Product
 import team.b2.bingojango.domain.product.repository.ProductRepository
-import team.b2.bingojango.domain.purchase.model.Purchase
-import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.repository.PurchaseRepository
-import team.b2.bingojango.domain.purchase_product.model.PurchaseProduct
 import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepository
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.FoodResponse
@@ -21,10 +16,7 @@ import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.domain.food.repository.FoodRepository
 import team.b2.bingojango.domain.purchase.service.PurchaseService
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
-import java.time.ZonedDateTime
-import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.global.exception.cases.*
-import team.b2.bingojango.global.security.UserPrincipal
 import team.b2.bingojango.global.util.EntityFinder
 import team.b2.bingojango.global.util.ZonedDateTimeConverter
 

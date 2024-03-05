@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security.jwt.service
+package team.b2.bingojango.global.security.util
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -6,9 +6,8 @@ import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.security.UserPrincipal
-import team.b2.bingojango.global.security.jwt.model.RefreshToken
-import team.b2.bingojango.global.security.jwt.repository.TokenRepository
+import team.b2.bingojango.global.security.jwt.RefreshToken
+import team.b2.bingojango.global.security.jwt.TokenRepository
 
 @Service
 class TokenUtil(
