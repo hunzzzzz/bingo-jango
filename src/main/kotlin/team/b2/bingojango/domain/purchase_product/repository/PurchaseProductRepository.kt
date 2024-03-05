@@ -11,5 +11,5 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 interface PurchaseProductRepository : JpaRepository<PurchaseProduct, Long> {
     fun findAllByPurchase(purchase: Purchase): List<PurchaseProduct>
 
-    fun findByRefrigeratorAndProduct(refrigerator: Refrigerator, product: Product): PurchaseProduct?
+    fun findByRefrigeratorAndProductAndPurchase(refrigerator: Refrigerator, product: Product, purchase: Purchase): PurchaseProduct?
 }
