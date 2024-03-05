@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security.jwt.service
+package team.b2.bingojango.global.security.util
 
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap

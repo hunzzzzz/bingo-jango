@@ -20,10 +20,10 @@ import team.b2.bingojango.domain.user.model.UserStatus
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.security.UserPrincipal
-import team.b2.bingojango.global.security.cookie.CookieUtil
+import team.b2.bingojango.global.security.util.UserPrincipal
+import team.b2.bingojango.global.security.util.CookieUtil
 import team.b2.bingojango.global.security.jwt.JwtPlugin
-import team.b2.bingojango.global.security.jwt.service.TokenUtil
+import team.b2.bingojango.global.security.util.TokenUtil
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 

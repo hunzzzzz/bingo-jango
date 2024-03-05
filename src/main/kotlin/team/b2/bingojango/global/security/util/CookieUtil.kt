@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security.cookie
+package team.b2.bingojango.global.security.util
 
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest

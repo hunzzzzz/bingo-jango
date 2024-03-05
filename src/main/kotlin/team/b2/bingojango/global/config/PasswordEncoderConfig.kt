@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security
+package team.b2.bingojango.global.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

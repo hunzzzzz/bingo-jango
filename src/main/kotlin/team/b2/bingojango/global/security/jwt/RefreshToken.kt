@@ -1,4 +1,4 @@
-package team.b2.bingojango.global.security.jwt.model
+package team.b2.bingojango.global.security.jwt
 
 import jakarta.persistence.*
 import team.b2.bingojango.domain.user.model.User

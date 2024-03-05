@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.purchase.model.PurchaseSort
 import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.service.PurchaseService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/purchase")

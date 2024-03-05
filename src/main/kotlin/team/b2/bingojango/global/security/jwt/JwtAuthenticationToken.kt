@@ -2,7 +2,7 @@ package team.b2.bingojango.global.security.jwt
 
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.web.authentication.WebAuthenticationDetails
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 import java.io.Serializable
 
 class JwtAuthenticationToken(

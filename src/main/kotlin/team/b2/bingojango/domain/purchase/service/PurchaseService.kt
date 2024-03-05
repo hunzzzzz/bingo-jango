@@ -20,7 +20,7 @@ import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepo
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.vote.repository.VoteRepository
 import team.b2.bingojango.global.exception.cases.*
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 import team.b2.bingojango.global.util.EntityFinder
 
 @Service
