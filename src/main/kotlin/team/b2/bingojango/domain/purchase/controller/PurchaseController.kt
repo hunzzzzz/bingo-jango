@@ -1,10 +1,12 @@
 package team.b2.bingojango.domain.purchase.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import jakarta.validation.Valid
+import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import team.b2.bingojango.domain.purchase.model.PurchaseSort
+import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.service.PurchaseService
 import team.b2.bingojango.global.security.UserPrincipal
 
@@ -48,4 +50,27 @@ class PurchaseController(
         @PathVariable refrigeratorId: Long
     ) =
         purchaseService.showPurchase(refrigeratorId)
+
+    @Operation(summary = "현재까지 진행된 모든 공동구매 목록을 출력")
+    @GetMapping("/all")
+    fun showPurchaseList(
+        @PathVariable refrigeratorId: Long,
+
+        @Parameter(description = "APPROVED = 승인된 공동구매, REJECTED = 취소된 공동구매, ACTIVE = 현재 진행 중인 공동구매")
+        @RequestParam(required = false) status: PurchaseStatus?,
+
+        @Parameter(description = "CREATED_AT = 최신순")
+        @RequestParam(required = false) sort: PurchaseSort?,
+
+        @Parameter(description = "페이지")
+        @RequestParam(value = "page", defaultValue = "1") page: Int
+    ) = purchaseService.showPurchaseList(refrigeratorId, status, sort, page)
+
+    @Operation(summary = "완료/거절된 이전 공동구매를 선택 후 똑같은 내용의 공동구매 생성")
+    @PostMapping("/{purchaseId}")
+    fun copyPurchase(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable refrigeratorId: Long,
+        @PathVariable purchaseId: Long
+    ) = purchaseService.copyPurchase(userPrincipal, refrigeratorId, purchaseId)
 }

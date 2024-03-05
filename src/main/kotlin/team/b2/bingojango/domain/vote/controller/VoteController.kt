@@ -15,12 +15,11 @@ class VoteController(
     private val voteService: VoteService
 ) {
     @Operation(summary = "현재 공동구매 목록에 대한 투표 현황 조회")
-    @GetMapping("/{voteId}")
+    @GetMapping
     fun showVote(
-        @PathVariable refrigeratorId: Long,
-        @PathVariable voteId: Long
+        @PathVariable refrigeratorId: Long
     ) =
-        ResponseEntity.ok().body(voteService.showVote(refrigeratorId, voteId))
+        ResponseEntity.ok().body(voteService.showVote(refrigeratorId))
 
     @Operation(summary = "현재 공동구매 목록에 대한 투표 시작")
     @PostMapping
@@ -32,12 +31,11 @@ class VoteController(
         ResponseEntity.ok().body(voteService.startVote(userPrincipal, refrigeratorId, voteRequest))
 
     @Operation(summary = "현재 공동구매 목록에 대한 투표")
-    @PutMapping("/{voteId}")
+    @PutMapping
     fun vote(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable refrigeratorId: Long,
-        @PathVariable voteId: Long,
         @RequestParam isAccepted: Boolean
     ) =
-        ResponseEntity.ok().body(voteService.vote(userPrincipal, refrigeratorId, voteId, isAccepted))
+        ResponseEntity.ok().body(voteService.vote(userPrincipal, refrigeratorId, isAccepted))
 }
