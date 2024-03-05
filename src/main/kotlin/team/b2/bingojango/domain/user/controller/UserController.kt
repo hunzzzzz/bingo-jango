@@ -13,6 +13,7 @@ import team.b2.bingojango.domain.user.dto.request.LoginRequest
 import team.b2.bingojango.domain.user.dto.request.PasswordRequest
 import team.b2.bingojango.domain.user.dto.request.SignUpRequest
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
@@ -56,14 +57,26 @@ class UserController(
             .body(signUpResponse)
     }
 
+    //내 프로필 조회
+    @GetMapping("/me")
+    fun getMyProfile(
+            @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<MyProfileResponse>{
+        //로그인한 본인 프로필 보기
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userService.getMyProfile(userPrincipal))
+    }
+
     //회원조회
     @GetMapping("/users/{userId}")
     fun getUser(
-            @PathVariable userId: Long
+            @PathVariable userId: Long,
+            @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<UserResponse>{
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(userService.getUser(userId))
+                .body(userService.getUser(userId, userPrincipal))
 
     }
 
