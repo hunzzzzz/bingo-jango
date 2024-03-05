@@ -45,7 +45,7 @@ class UserService(
 
         //RefreshToken 생성 후 쿠키 반환, DB 저장
         val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
-        val cookieExpirationHour = 86400 // 쿠키 유효 시간(24시간)
+        val cookieExpirationHour = 24 * 60 * 60 // 쿠키유효시간(24시간, 초 단위)
         CookieUtil.addCookie(response,"refreshToken",refreshToken, cookieExpirationHour) //RefreshToken 쿠키 반환
         tokenUtil.storeToken(user, refreshToken) //RefreshToken DB 저장
 
