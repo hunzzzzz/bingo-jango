@@ -21,7 +21,7 @@ import team.b2.bingojango.global.security.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService
 ) {
@@ -37,7 +37,7 @@ class UserController(
     }
 
     @Operation(summary = "로그아웃")
-    @PostMapping("/logout-test")
+    @PostMapping("/logout")
     fun logout(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         request: HttpServletRequest,
