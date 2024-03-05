@@ -15,7 +15,8 @@ import java.util.*
 class JwtPlugin(
     @Value("\${auth.jwt.issuer}") private val issuer: String,
     @Value("\${auth.jwt.secret}") private val secret: String,
-    @Value("\${auth.jwt.accessTokenExpirationHour}") private val accessTokenExpirationHour: Long
+    @Value("\${auth.jwt.accessTokenExpirationHour}") private val accessTokenExpirationHour: Long,
+    @Value("\${auth.jwt.refreshTokenExpirationHour}") private val refreshTokenExpirationHour: Long
 ) {
     fun validateToken(jwt: String): Result<Jws<Claims>>{
         return kotlin.runCatching {
@@ -26,6 +27,10 @@ class JwtPlugin(
 
     fun generateAccessToken(subject: String, email: String, role: String): String {
         return generateToken(subject, email, role, Duration.ofHours(accessTokenExpirationHour))
+    }
+
+    fun generateRefreshToken(subject: String, email: String, role: String): String {
+        return generateToken(subject, email, role, Duration.ofHours(refreshTokenExpirationHour))
     }
 
     private fun generateToken(subject: String, email: String, role: String, expirationPeriod: Duration): String {

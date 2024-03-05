@@ -12,7 +12,7 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
 class ChatRoomService(
@@ -48,13 +48,13 @@ class ChatRoomService(
 
     // 채팅방 삭제 (냉장고 삭제 로직에 추가)
     fun deleteChatRoom(refrigerator: Refrigerator) {
-        val chatRoom = getChatRoomByRefrigerator(refrigerator)
+        val chatRoom = getChatRoom(refrigerator)
         chatRoom.chatRoomStatus = ChatRoomStatus.DELETED
         chatRoomRepository.save(chatRoom)
     }
 
     // 채팅방 정보 객체 호출
-    fun getChatRoomByRefrigerator(refrigerator: Refrigerator) =
+    fun getChatRoom(refrigerator: Refrigerator) =
         chatRoomRepository.findByRefrigerator(refrigerator) ?: throw ModelNotFoundException("refrigerator")
 
 }

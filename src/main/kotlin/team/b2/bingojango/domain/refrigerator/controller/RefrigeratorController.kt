@@ -11,7 +11,7 @@ import team.b2.bingojango.domain.refrigerator.dto.request.JoinByInvitationCodeRe
 import team.b2.bingojango.domain.refrigerator.dto.request.JoinByPasswordRequest
 import team.b2.bingojango.domain.refrigerator.dto.response.RefrigeratorResponse
 import team.b2.bingojango.domain.refrigerator.service.RefrigeratorService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @RestController
 @RequestMapping("/api/v1/refrigerator")

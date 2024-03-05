@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Component
 class JwtAuthenticationFilter(

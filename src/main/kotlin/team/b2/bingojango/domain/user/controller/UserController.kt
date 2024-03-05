@@ -3,6 +3,8 @@ package team.b2.bingojango.domain.user.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -16,11 +18,11 @@ import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService
 ) {
@@ -28,21 +30,23 @@ class UserController(
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
     fun login(
-        @RequestBody loginRequest: LoginRequest,
+        @RequestBody loginRequest: LoginRequest, response: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(userService.login(loginRequest))
+            .body(userService.login(loginRequest, response))
     }
 
     @Operation(summary = "로그아웃")
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     fun logout(
-        @AuthenticationPrincipal userPrincipal: UserPrincipal
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        request: HttpServletRequest,
+        response: HttpServletResponse
     ): ResponseEntity<Unit>{
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
-            .build()
+            .body(userService.logout(userPrincipal, request, response))
     }
 
     //회원가입

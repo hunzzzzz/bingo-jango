@@ -7,7 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.vote.dto.request.VoteRequest
 import team.b2.bingojango.domain.vote.service.VoteService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/vote")

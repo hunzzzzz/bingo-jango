@@ -1,5 +1,7 @@
 package team.b2.bingojango.domain.user.service
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -18,50 +20,49 @@ import team.b2.bingojango.domain.user.model.UserStatus
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
+import team.b2.bingojango.global.security.util.CookieUtil
 import team.b2.bingojango.global.security.jwt.JwtPlugin
-import team.b2.bingojango.global.security.jwt.service.TokenStorageService
+import team.b2.bingojango.global.security.util.TokenUtil
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 @Service
 class UserService(
-        private val userRepository: UserRepository,
-        private val passwordEncoder: PasswordEncoder,
-        private val jwtPlugin: JwtPlugin,
-        private val tokenStorageService: TokenStorageService,
-        private val memberRepository: MemberRepository
+    private val userRepository: UserRepository,
+    private val passwordEncoder: PasswordEncoder,
+    private val jwtPlugin: JwtPlugin,
+    private val tokenUtil: TokenUtil,
+    private val memberRepository: MemberRepository
 ) {
-    fun login(request: LoginRequest
+    //로그인
+    fun login(request: LoginRequest,
+              response: HttpServletResponse
     ): LoginResponse {
+        //이메일, 비밀번호 확인
+        val user = userRepository.findByEmail(request.email) ?: throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
+        if (!passwordEncoder.matches(request.password, user.password)) throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
 
-        //확인사항1: 이메일 존재 여부 확인
-        val user = userRepository.findByEmail(request.email)
-                ?: throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
+        //RefreshToken 생성 후 쿠키 반환, DB 저장
+        val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
+        val cookieExpirationHour = 24 * 60 * 60 // 쿠키유효시간(24시간, 초 단위)
+        CookieUtil.addCookie(response,"refreshToken",refreshToken, cookieExpirationHour) //RefreshToken 쿠키 반환
+        tokenUtil.storeToken(user, refreshToken) //RefreshToken DB 저장
 
-        //확인사항2: 비밀번호 일치 여부 확인
-        if (!passwordEncoder.matches(request.password, user.password))
-            throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
-
-        //토큰 생성
-        val token = jwtPlugin.generateAccessToken(
-                subject = user.id.toString(),
-                email = user.email,
-                role = user.role.name
-        )
-
-        //토큰 저장 (1시간 후 만료)
-        tokenStorageService.storeToken(user.id!!, token, LocalDateTime.now().plusHours(1))
-
-        return LoginResponse(token)
+        //AccessToken 생성 후 반환
+        val accessToken = jwtPlugin.generateAccessToken(user.id.toString(), user.email, user.role.name)
+        return LoginResponse(accessToken)
     }
 
+    //로그아웃
     @Transactional
     fun logout(
-            userPrincipal: UserPrincipal
-    ) {
-        //토큰 무효화
-        tokenStorageService.invalidateToken(userPrincipal.id)
+        userPrincipal: UserPrincipal,
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ){
+        tokenUtil.deleteToken(userPrincipal) //RefreshToken DB 삭제
+        CookieUtil.deleteCookie(request,response,"refreshToken") //RefreshToken 쿠키 삭제
     }
 
     //회원가입 성공 및 실패
