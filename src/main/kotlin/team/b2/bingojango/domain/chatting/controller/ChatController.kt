@@ -15,7 +15,7 @@ import team.b2.bingojango.domain.chatting.dto.ChatRequest
 import team.b2.bingojango.domain.chatting.dto.ChatResponse
 import team.b2.bingojango.domain.chatting.service.ChatRoomService
 import team.b2.bingojango.domain.chatting.service.ChatService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @RestController
 //@RequestMapping("/api/v1/refrigerator/{refrigeratorId}")

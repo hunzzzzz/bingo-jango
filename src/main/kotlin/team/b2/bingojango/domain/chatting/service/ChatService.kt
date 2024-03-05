@@ -16,7 +16,7 @@ import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
 class ChatService(
