@@ -48,4 +48,6 @@ out
 gen
 build
 .gradle
+
+aws.yml
 application-local.yml
