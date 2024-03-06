@@ -81,9 +81,10 @@ class PurchaseService(
             )
         ) throw AlreadyOnVoteException("삭제")
 
-        (purchaseProductRepository.findByRefrigeratorAndProduct(
+        (purchaseProductRepository.findByRefrigeratorAndProductAndPurchase(
             refrigerator = entityFinder.getRefrigerator(refrigeratorId),
-            product = getProduct(foodId, refrigeratorId)
+            product = getProduct(foodId, refrigeratorId),
+            purchase = getCurrentPurchase()
         ) ?: throw ModelNotFoundException("식품")).updateCount(count)
     }
 
@@ -103,9 +104,10 @@ class PurchaseService(
         ) throw AlreadyOnVoteException("삭제")
 
         purchaseProductRepository.delete(
-            purchaseProductRepository.findByRefrigeratorAndProduct(
+            purchaseProductRepository.findByRefrigeratorAndProductAndPurchase(
                 refrigerator = entityFinder.getRefrigerator(refrigeratorId),
-                product = getProduct(foodId, refrigeratorId)
+                product = getProduct(foodId, refrigeratorId),
+                purchase = getCurrentPurchase()
             ) ?: throw ModelNotFoundException("식품")
         )
     }
