@@ -23,6 +23,8 @@ repositories {
 val queryDslVersion = "5.0.0"
 
 dependencies {
+    // ACTUATOR
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     // DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
