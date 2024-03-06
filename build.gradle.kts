@@ -52,6 +52,8 @@ dependencies {
     kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta")
     // MAIL
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    //AWS
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.0.1.RELEASE")
 }
 
 tasks.withType<KotlinCompile> {
