@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
 
-@PropertySource("classpath:aws.yml")
+@PropertySource("classpath:application.yml")
 @Service
 class S3Service(
         private val s3Client: AmazonS3Client

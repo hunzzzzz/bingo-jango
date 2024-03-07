@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.PropertySource
 
-@PropertySource("classpath:aws.yml")
+@PropertySource("classpath:application.yml")
 @Configuration
 class AwsConfig {
     @Value("\${accessKey}")
