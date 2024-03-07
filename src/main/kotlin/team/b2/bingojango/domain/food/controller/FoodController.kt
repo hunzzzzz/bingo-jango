@@ -18,6 +18,7 @@ class FoodController(
     private val foodService: FoodService
 ) {
 
+    @Operation(summary = "냉장고의 음식 조회")
     @GetMapping
     fun getFood(
             @PathVariable refrigeratorId: Long
@@ -27,6 +28,7 @@ class FoodController(
                 .body(foodService.getFood(refrigeratorId))
     }
 
+    @Operation(summary = "냉장고에 음식 추가")
     @PostMapping
     fun addFood(
         @PathVariable refrigeratorId: Long,
@@ -36,6 +38,7 @@ class FoodController(
         return ResponseEntity(HttpStatus.CREATED)
     }
 
+    @Operation(summary = "냉장고의 음식 수정")
     @PutMapping("/{foodId}")
     fun updateFood(
         @PathVariable refrigeratorId: Long,
@@ -46,6 +49,7 @@ class FoodController(
         return ResponseEntity(HttpStatus.OK)
     }
 
+    @Operation(summary = "냉장고의 음식 수량 수정")
     @PatchMapping("/{foodId}")
     fun updateFoodCount(
         @PathVariable refrigeratorId: Long,
@@ -56,6 +60,7 @@ class FoodController(
         return ResponseEntity(HttpStatus.OK)
     }
 
+    @Operation(summary = "냉장고의 음식 삭제")
     @DeleteMapping("/{foodId}")
     fun deleteFood(
         @PathVariable refrigeratorId: Long,

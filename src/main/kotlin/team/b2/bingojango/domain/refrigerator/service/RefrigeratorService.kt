@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.chatting.service.ChatRoomService
 import team.b2.bingojango.domain.mail.repository.MailRepository
+import team.b2.bingojango.domain.member.dto.MemberResponse
 import team.b2.bingojango.domain.member.model.Member
+import team.b2.bingojango.domain.member.model.MemberRole
 import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.refrigerator.dto.request.AddRefrigeratorRequest
 import team.b2.bingojango.domain.refrigerator.dto.request.JoinByInvitationCodeRequest
@@ -16,14 +18,15 @@ import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
+import java.time.ZonedDateTime
 
 @Service
 class RefrigeratorService(
-    private val refrigeratorRepository: RefrigeratorRepository,
-    private val memberRepository: MemberRepository,
-    private val userRepository: UserRepository,
-    private val chatRoomService: ChatRoomService,
-    private val mailRepository: MailRepository,
+        private val refrigeratorRepository: RefrigeratorRepository,
+        private val memberRepository: MemberRepository,
+        private val userRepository: UserRepository,
+        private val chatRoomService: ChatRoomService,
+        private val mailRepository: MailRepository,
 ) {
     //냉장고 목록 조회
     fun getRefrigerator(userPrincipal: UserPrincipal): List<RefrigeratorResponse> {
@@ -38,7 +41,7 @@ class RefrigeratorService(
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
         val chatRoom = chatRoomService.buildChatRoom(refrigerator, userPrincipal)
-        val member = memberRepository.save(Member.toEntity(user, refrigerator, chatRoom))
+        val member = memberRepository.save(Member.toEntity(user, MemberRole.STAFF,refrigerator, chatRoom))
         return refrigerator.toResponse()
     }
 
@@ -47,12 +50,13 @@ class RefrigeratorService(
     fun joinRefrigeratorByPassword(userPrincipal: UserPrincipal, request: JoinByPasswordRequest): RefrigeratorResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         //확인사항1: 냉장고 존재 유무
-        val refrigerator = refrigeratorRepository.findByName(request.name) ?: throw ModelNotFoundException("Refrigerator")
+        val refrigerator = refrigeratorRepository.findByName(request.name)
+                ?: throw ModelNotFoundException("Refrigerator")
         //확인사항2: 비밀번호 일치 여부
         if (refrigerator.password != request.password) throw IllegalArgumentException("냉장고의 비밀번호가 일치하지 않습니다.")
 
         val chatRoom = chatRoomService.getChatRoom(refrigerator)
-        memberRepository.save(Member.toEntity(user, refrigerator, chatRoom))
+        memberRepository.save(Member.toEntity(user, MemberRole.MEMBER, refrigerator, chatRoom))
 
         return refrigerator.toResponse()
     }
@@ -65,8 +69,22 @@ class RefrigeratorService(
         val refrigerator = mail.refrigerator
         val chatRoom = chatRoomService.getChatRoom(refrigerator)
 
-        memberRepository.save(Member.toEntity(user, refrigerator, chatRoom))
+        memberRepository.save(Member.toEntity(user, MemberRole.MEMBER, refrigerator, chatRoom))
 
         return refrigerator.toResponse()
+    }
+
+    @Transactional
+    fun getMembers(refrigeratorId: Long): List<MemberResponse> {
+        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
+                ?: throw ModelNotFoundException("Refrigerator")
+        val members = memberRepository.findAllByRefrigerator(refrigerator)
+        return members.sortedWith(compareBy<Member>{it.role}.thenBy{it.createdAt}).map { member ->
+            MemberResponse(
+                    name = member.user.name,
+                    role = member.role,
+                    createdAt = ZonedDateTime.now()
+            )
+        }
     }
 }
