@@ -11,11 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.user.dto.request.*
-import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
-import team.b2.bingojango.domain.user.dto.response.LoginResponse
-import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
-import team.b2.bingojango.domain.user.dto.response.SignUpResponse
-import team.b2.bingojango.domain.user.dto.response.UserResponse
+import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
 

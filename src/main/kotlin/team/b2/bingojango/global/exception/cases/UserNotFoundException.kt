@@ -1,3 +1,3 @@
-package team.b2.bingojango.domain.user.service
+package team.b2.bingojango.global.exception.cases
 
 class UserNotFoundException(message: String) : RuntimeException(message)

@@ -10,23 +10,20 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.mail.service.MailService
-import team.b2.bingojango.domain.user.dto.request.*
-import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
 import team.b2.bingojango.domain.member.repository.MemberRepository
-import team.b2.bingojango.domain.user.dto.response.LoginResponse
-import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
-import team.b2.bingojango.domain.user.dto.response.SignUpResponse
-import team.b2.bingojango.domain.user.dto.response.UserResponse
+import team.b2.bingojango.domain.user.dto.request.*
+import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.model.UserStatus
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
+import team.b2.bingojango.global.exception.cases.UserNotFoundException
 import team.b2.bingojango.global.security.TokenGenerator
-import team.b2.bingojango.global.security.util.UserPrincipal
-import team.b2.bingojango.global.security.util.CookieUtil
 import team.b2.bingojango.global.security.jwt.JwtPlugin
+import team.b2.bingojango.global.security.util.CookieUtil
 import team.b2.bingojango.global.security.util.TokenUtil
+import team.b2.bingojango.global.security.util.UserPrincipal
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
@@ -35,7 +32,6 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtPlugin: JwtPlugin,
-    private val tokenStorageService: TokenStorageService,
     private val mailService: MailService,
     private val tokenGenerator: TokenGenerator,
     private val javaMailSender: JavaMailSender,
