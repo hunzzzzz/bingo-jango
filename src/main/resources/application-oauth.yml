@@ -1,0 +1,16 @@
+spring:
+  # Settings
+  config:
+    activate:
+      on-profile: oauth
+  # OAuth2
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
