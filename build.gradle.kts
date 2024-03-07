@@ -56,6 +56,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-mail")
     //AWS
     implementation("org.springframework.cloud:spring-cloud-starter-aws:2.0.1.RELEASE")
+    // OAuth2
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 }
 
 tasks.withType<KotlinCompile> {

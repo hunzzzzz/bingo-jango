@@ -5,7 +5,10 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Component
+import team.b2.bingojango.domain.user.repository.UserRepository
+import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
@@ -16,7 +19,8 @@ class JwtPlugin(
     @Value("\${auth.jwt.issuer}") private val issuer: String,
     @Value("\${auth.jwt.secret}") private val secret: String,
     @Value("\${auth.jwt.accessTokenExpirationHour}") private val accessTokenExpirationHour: Long,
-    @Value("\${auth.jwt.refreshTokenExpirationHour}") private val refreshTokenExpirationHour: Long
+    @Value("\${auth.jwt.refreshTokenExpirationHour}") private val refreshTokenExpirationHour: Long,
+    private val userRepository: UserRepository,
 ) {
     fun validateToken(jwt: String): Result<Jws<Claims>>{
         return kotlin.runCatching {
@@ -51,4 +55,19 @@ class JwtPlugin(
             .signWith(key)
             .compact()
     }
+
+    fun generateTokenDto(oAuth2User: OAuth2User): JwtDto {
+        val email = oAuth2User.attributes["email"] as String
+        val user = userRepository.findByEmail(email) ?: throw ModelNotFoundException("User")
+        val subject = user.id.toString()
+        val role = user.role.toString()
+        val refreshToken = generateRefreshToken(subject, email, role)
+        val accessToken = generateAccessToken(subject, email, role)
+
+        return JwtDto(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+        )
+    }
+
 }
