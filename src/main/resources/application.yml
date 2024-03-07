@@ -3,9 +3,9 @@ server:
   port: 80
 
 spring:
-  # SLACK
+  # PROFILES
   profiles:
-    include: slack
+    include: [oauth]
 
   # Mail
   mail:
