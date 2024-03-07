@@ -31,4 +31,19 @@ class MailUtility(
 
         return code
     }
+
+    fun sendMailFindingPassword(to: String, subject: String, body: String): String {
+        println("asdfasdfasdfasfdas")
+        val message = javaMailSender.createMimeMessage()
+        val helper = MimeMessageHelper(message)
+
+        helper.setTo(to) // mail 수신자
+        helper.setSubject(subject) // mail 제목
+        helper.setText(body) // mail 내용
+        helper.setFrom("gks777777@gmail.com") // mail 발송자
+
+        javaMailSender.send(message)
+
+        return ""
+    }
 }

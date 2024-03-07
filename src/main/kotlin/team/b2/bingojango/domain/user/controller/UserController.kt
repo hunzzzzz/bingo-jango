@@ -8,10 +8,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import team.b2.bingojango.domain.user.dto.request.EditRequest
-import team.b2.bingojango.domain.user.dto.request.LoginRequest
-import team.b2.bingojango.domain.user.dto.request.PasswordRequest
-import team.b2.bingojango.domain.user.dto.request.SignUpRequest
+import team.b2.bingojango.domain.user.dto.request.*
+import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.service.UserService
@@ -19,7 +17,7 @@ import team.b2.bingojango.global.security.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api")
 class UserController(
     private val userService: UserService
 ) {
@@ -77,6 +75,27 @@ class UserController(
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("비밀번호가 변경되었습니다.")
+    }
+
+    // 이메일 찾기
+    @PostMapping("/find-email")
+    fun findEmail(@RequestBody request: FindEmailRequest): ResponseEntity<FindEmailResponse> {
+        val response = userService.findEmail(request)
+        return ResponseEntity.ok(response)
+    }
+
+    //비밀번호 찾기
+    @PostMapping("/find-password")
+    fun findPassword(@RequestBody request: FindPasswordRequest): ResponseEntity<Any> {
+        userService.findPassword(request)
+        return ResponseEntity.ok().build()
+    }
+
+    //비밀번호 재설정
+    @PostMapping("/reset-password")
+    fun resetPassword(@RequestBody request: PasswordResetRequest): ResponseEntity<Any> {
+        userService.resetPassword(request)
+        return ResponseEntity.ok().build()
     }
 
     // 회원 탈퇴

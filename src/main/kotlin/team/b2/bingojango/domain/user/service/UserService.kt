@@ -1,14 +1,15 @@
 package team.b2.bingojango.domain.user.service
 
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import team.b2.bingojango.domain.user.dto.request.EditRequest
-import team.b2.bingojango.domain.user.dto.request.LoginRequest
-import team.b2.bingojango.domain.user.dto.request.PasswordRequest
-import team.b2.bingojango.domain.user.dto.request.SignUpRequest
+import team.b2.bingojango.domain.mail.service.MailService
+import team.b2.bingojango.domain.user.dto.request.*
+import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.model.User
@@ -16,6 +17,7 @@ import team.b2.bingojango.domain.user.model.UserStatus
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
+import team.b2.bingojango.global.security.TokenGenerator
 import team.b2.bingojango.global.security.UserPrincipal
 import team.b2.bingojango.global.security.jwt.JwtPlugin
 import team.b2.bingojango.global.security.jwt.service.TokenStorageService
@@ -27,8 +29,18 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtPlugin: JwtPlugin,
-    private val tokenStorageService: TokenStorageService
-) {
+    private val tokenStorageService: TokenStorageService,
+    private val mailService: MailService,
+    private val tokenGenerator: TokenGenerator,
+    private val javaMailSender: JavaMailSender
+)
+
+{
+    fun findUserById(userId: Long): User {
+        return userRepository.findById(userId)
+            .orElseThrow { UserNotFoundException("User not found with id: $userId") }
+    }
+
     fun login(request: LoginRequest
     ): LoginResponse {
 
@@ -147,6 +159,72 @@ class UserService(
         return savedUser.id ?: throw IllegalStateException("Failed to create user")
     }
 
+    // 이메일 찾기
+    fun findEmail(request: FindEmailRequest): FindEmailResponse {
+        // 실명과 폰 번호로 사용자를 찾습니다.
+        val user = userRepository.findByNameAndPhone(request.name, request.phone)
+            ?: throw UserNotFoundException("사용자를 찾을 수 없습니다.")
+
+        // 사용자의 이메일을 가져옵니다.
+        val email = user.email
+
+        // 이메일의 일부를 숨깁니다. 예를 들어, 처음 5글자만 표시하고 나머지는 '*'로 대체합니다.
+        val visibleLength = 5
+        val hiddenEmail = email.take(visibleLength) + "*".repeat(email.length - visibleLength)
+
+        return FindEmailResponse(hiddenEmail)
+    }
+
+    //send mail 매서드 추가
+    fun sendMail(to: String, subject: String, body: String) {
+        val message = SimpleMailMessage().apply {
+            setTo(to)
+            setSubject(subject)
+            setText(body)
+        }
+        javaMailSender.send(message)
+    }
+
+    //비밀번호 찾기
+    fun findPassword(request: FindPasswordRequest) {
+        // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
+        val user = userRepository.findByEmail(request.email)
+            ?: throw UserNotFoundException("User not found with email: ${request.email}")
+
+        // 임시 비밀번호 생성
+        val newPassword = tokenGenerator.generateToken()
+
+        // 비밀번호 업데이트
+        user.password = newPassword
+
+        // 사용자 정보 저장 (비밀번호 업데이트)
+        userRepository.save(user)
+
+        // 이메일로 임시 비밀번호 전송
+        val subject = "임시 비밀번호 발급 안내"
+        val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
+        mailService.sendEmail(user.email, subject, body)
+    }
+    //비밀번호 재설정
+    fun resetPassword(request: PasswordResetRequest) {
+        // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
+        val user = userRepository.findByEmail(request.email)
+            ?: throw UserNotFoundException("User not found with email: ${request.email}")
+
+        // 임시 비밀번호 생성
+        val newPassword = tokenGenerator.generateToken()
+
+        // 비밀번호 업데이트
+        user.password = newPassword
+
+        // 사용자 정보 저장 (비밀번호 업데이트)
+        userRepository.save(user)
+
+        // 이메일로 임시 비밀번호 전송
+        val subject = "임시 비밀번호 발급 안내"
+        val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
+        mailService.sendEmail(user.email, subject, body)
+    }
     // 유저 프로필 수정
     @Transactional
     fun updateUserProfile(request: EditRequest, userPrincipal: UserPrincipal){
