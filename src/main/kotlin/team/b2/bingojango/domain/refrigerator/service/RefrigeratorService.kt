@@ -83,7 +83,7 @@ class RefrigeratorService(
             MemberResponse(
                     name = member.user.name,
                     role = member.role,
-                    createdAt = ZonedDateTime.now()
+                    createdAt = member.createdAt
             )
         }
     }
