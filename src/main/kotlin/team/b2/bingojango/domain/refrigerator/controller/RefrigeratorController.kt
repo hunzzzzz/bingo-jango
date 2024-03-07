@@ -6,12 +6,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import team.b2.bingojango.domain.member.dto.MemberResponse
 import team.b2.bingojango.domain.refrigerator.dto.request.AddRefrigeratorRequest
 import team.b2.bingojango.domain.refrigerator.dto.request.JoinByInvitationCodeRequest
 import team.b2.bingojango.domain.refrigerator.dto.request.JoinByPasswordRequest
 import team.b2.bingojango.domain.refrigerator.dto.response.RefrigeratorResponse
 import team.b2.bingojango.domain.refrigerator.service.RefrigeratorService
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @RestController
 @RequestMapping("/api/v1/refrigerator")
@@ -64,4 +65,16 @@ class RefrigeratorController(
             .status(HttpStatus.OK)
             .body(refrigeratorService.joinRefrigeratorByInvitationCode(userPrincipal, request))
     }
+
+    @Operation(summary = "냉장고 참여 멤버 조회")
+    @GetMapping("/{refrigeratorId}")
+    fun getMembers(
+            @PathVariable refrigeratorId: Long
+    ): ResponseEntity<List<MemberResponse>>{
+        refrigeratorService.getMembers(refrigeratorId)
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(refrigeratorService.getMembers(refrigeratorId))
+    }
+
 }

@@ -23,6 +23,8 @@ repositories {
 val queryDslVersion = "5.0.0"
 
 dependencies {
+    // ACTUATOR
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     // DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
@@ -52,6 +54,10 @@ dependencies {
     kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta")
     // MAIL
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    //AWS
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.0.1.RELEASE")
+    // OAuth2
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 }
 
 tasks.withType<KotlinCompile> {

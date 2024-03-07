@@ -48,4 +48,5 @@ out
 gen
 build
 .gradle
-application.yml
+
+application-local.yml

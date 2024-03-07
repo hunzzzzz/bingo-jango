@@ -1,5 +1,7 @@
 package team.b2.bingojango.domain.purchase.service
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -9,6 +11,7 @@ import team.b2.bingojango.domain.product.model.Product
 import team.b2.bingojango.domain.product.repository.ProductRepository
 import team.b2.bingojango.domain.purchase.dto.response.PurchaseResponse
 import team.b2.bingojango.domain.purchase.model.Purchase
+import team.b2.bingojango.domain.purchase.model.PurchaseSort
 import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.repository.PurchaseRepository
 import team.b2.bingojango.domain.purchase_product.dto.response.PurchaseProductResponse
@@ -17,7 +20,7 @@ import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepo
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.vote.repository.VoteRepository
 import team.b2.bingojango.global.exception.cases.*
-import team.b2.bingojango.global.security.UserPrincipal
+import team.b2.bingojango.global.security.util.UserPrincipal
 import team.b2.bingojango.global.util.EntityFinder
 
 @Service
@@ -78,9 +81,10 @@ class PurchaseService(
             )
         ) throw AlreadyOnVoteException("삭제")
 
-        (purchaseProductRepository.findByRefrigeratorAndProduct(
+        (purchaseProductRepository.findByRefrigeratorAndProductAndPurchase(
             refrigerator = entityFinder.getRefrigerator(refrigeratorId),
-            product = getProduct(foodId, refrigeratorId)
+            product = getProduct(foodId, refrigeratorId),
+            purchase = getCurrentPurchase()
         ) ?: throw ModelNotFoundException("식품")).updateCount(count)
     }
 
@@ -100,9 +104,10 @@ class PurchaseService(
         ) throw AlreadyOnVoteException("삭제")
 
         purchaseProductRepository.delete(
-            purchaseProductRepository.findByRefrigeratorAndProduct(
+            purchaseProductRepository.findByRefrigeratorAndProductAndPurchase(
                 refrigerator = entityFinder.getRefrigerator(refrigeratorId),
-                product = getProduct(foodId, refrigeratorId)
+                product = getProduct(foodId, refrigeratorId),
+                purchase = getCurrentPurchase()
             ) ?: throw ModelNotFoundException("식품")
         )
     }
@@ -138,6 +143,46 @@ class PurchaseService(
                 refrigerator = refrigerator
             )
         )
+
+    // [API] 현재까지 진행된 모든 Purchase 목록을 출력
+    fun showPurchaseList(refrigeratorId: Long, status: PurchaseStatus?, sort: PurchaseSort?, page: Int) =
+        purchaseRepository.searchPurchase(
+            status = status,
+            pageable = PageRequest.of(page - 1, 5, Sort.by(sort?.name))
+        ).map {
+            PurchaseResponse.from(
+                purchase = it,
+                member = entityFinder.getMember(it.proposedBy, refrigeratorId),
+                purchaseProductList = purchaseProductRepository.findAllByPurchase(it)
+                    .map { purchaseProduct -> PurchaseProductResponse.from(purchaseProduct) }
+            )
+        }
+
+    /*
+        [API] 이전 공동구매와 같은 PurchaseProduct 가 담긴 새로운 Purchase 를 생성
+            - 검증 조건 1 : 관리자(STAFF)만 공동구매를 신청할 수 있음
+            - 검증 조건 2 : 이미 진행 중인 공동구매가 있는 경우 신청할 수 없음
+     */
+    fun copyPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long, purchaseId: Long) {
+        if (entityFinder.getMember(userPrincipal.id, refrigeratorId).role != MemberRole.STAFF)
+            throw InvalidRoleException()
+        else if (purchaseRepository.existsByStatus(PurchaseStatus.ACTIVE))
+            throw AlreadyHaveActivePurchaseException()
+
+        val currentPurchase = purchaseRepository.findByIdOrNull(purchaseId) ?: throw ModelNotFoundException("공동구매")
+        val newPurchase = makePurchase(userPrincipal, entityFinder.getRefrigerator(refrigeratorId))
+
+        purchaseProductRepository.findAllByPurchase(currentPurchase).forEach {
+            purchaseProductRepository.save(
+                PurchaseProduct(
+                    count = it.count,
+                    purchase = newPurchase,
+                    product = it.product,
+                    refrigerator = it.refrigerator
+                )
+            )
+        }
+    }
 
     // [내부 메서드] 현재 냉장고 내에 등록된 (해당 식품에 대한) Product 를 리턴 (없으면 새로운 Product 객체 생성 후 리턴)
     private fun getProduct(foodId: Long, refrigeratorId: Long): Product =
