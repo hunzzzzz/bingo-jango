@@ -27,8 +27,9 @@ class RefrigeratorService(
 ) {
     //냉장고 목록 조회
     fun getRefrigerator(userPrincipal: UserPrincipal): List<RefrigeratorResponse> {
-        val member = memberRepository.findAll().filter { it.id == userPrincipal.id }
-        return member.map { it.refrigerator.toResponse() }
+        val member = memberRepository.findAllByUserId(userPrincipal.id)
+        val refrigerator = member.map { it.refrigerator }
+        return refrigerator.map { it.toResponse()}
     }
 
     //신규 냉장고 생성
