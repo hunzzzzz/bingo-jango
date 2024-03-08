@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.mail.service
 
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
 import team.b2.bingojango.domain.mail.dto.MailResponse
 import team.b2.bingojango.domain.mail.model.Mail
@@ -14,6 +15,7 @@ class MailService(
     private val mailRepository: MailRepository,
     private val mailUtility: MailUtility,
     private val refrigeratorRepository: RefrigeratorRepository,
+    private val mailSender: JavaMailSender
 ) {
     fun sendInvitationCode(refrigeratorId: Long, email: String): MailResponse {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
@@ -22,4 +24,11 @@ class MailService(
 
         return MailResponse(message = "요청하신 이메일로 초대코드를 보냈습니다.", code = code)
     }
+
+   fun sendEmail(to: String, subject: String, body: String) {
+
+       mailUtility.sendMailFindingPassword(to, subject, body)
+
+
+   }
 }
