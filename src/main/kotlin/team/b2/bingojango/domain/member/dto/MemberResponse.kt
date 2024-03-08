@@ -6,5 +6,6 @@ import java.time.ZonedDateTime
 data class MemberResponse (
         val name: String,
         val role: MemberRole,
+        val memberId: Long,
         val createdAt: ZonedDateTime
 )

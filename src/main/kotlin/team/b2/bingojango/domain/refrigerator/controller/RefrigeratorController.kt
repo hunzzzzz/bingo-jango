@@ -71,7 +71,6 @@ class RefrigeratorController(
     fun getMembers(
             @PathVariable refrigeratorId: Long
     ): ResponseEntity<List<MemberResponse>>{
-        refrigeratorService.getMembers(refrigeratorId)
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(refrigeratorService.getMembers(refrigeratorId))
