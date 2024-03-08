@@ -21,7 +21,7 @@ class Member(
     val refrigerator: Refrigerator,
 
     @ManyToOne
-    @JoinColumn(name = "chat_id")
+    @JoinColumn(name = "chatroom_id")
     val chatRoom: ChatRoom,
 ) {
     @Id

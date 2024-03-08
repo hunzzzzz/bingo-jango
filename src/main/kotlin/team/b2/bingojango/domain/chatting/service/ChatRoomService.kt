@@ -42,7 +42,7 @@ class ChatRoomService(
             val members = memberRepository.findAllByRefrigerator(chatRoom.refrigerator)
             return members
                 .sortedByDescending { it.role == MemberRole.STAFF }
-                .map { "${it.user.name} / ${it.role}\n" }
+                .map { "${it.user.name} / ${it.role} \n" }
         } else throw IllegalArgumentException("채팅창 멤버가 아니에요.")
     }
 

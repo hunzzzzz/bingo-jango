@@ -2,6 +2,8 @@ package team.b2.bingojango.domain.chatting.service
 
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.chatting.dto.ChatRequest
@@ -13,9 +15,12 @@ import team.b2.bingojango.domain.chatting.model.toResponse
 import team.b2.bingojango.domain.chatting.repository.ChatRepository
 import team.b2.bingojango.domain.chatting.repository.ChatRoomRepository
 import team.b2.bingojango.domain.member.repository.MemberRepository
+import team.b2.bingojango.domain.refrigerator.model.Refrigerator
+import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
+import team.b2.bingojango.global.security.jwt.JwtAuthenticationToken
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
@@ -29,12 +34,14 @@ class ChatService(
     // 채팅 전송
     @Transactional
     fun sendMessage(
-        userPrincipal: UserPrincipal,
-        chatRoomId: Long,
+        headerAccessor: StompHeaderAccessor,
         request: ChatRequest,
     ): ChatResponse {
-        val user = getUserInfo(userPrincipal)
-        val chatRoom = getChatRoomInfo(chatRoomId)
+        println("${headerAccessor.user}")
+        val authorHeader= headerAccessor.getFirstNativeHeader("Authorization")
+        val userInfo= (headerAccessor.user as JwtAuthenticationToken).principal
+        val user = getUserInfo(userInfo)
+        val chatRoom = getChatRoomInfo(request.chatRoomId.toLong())
         val member = getMemberInfo(user, chatRoom)
 
         return chatRepository.save(
@@ -59,6 +66,7 @@ class ChatService(
 
             return chats.map {
                 ChatResponse(
+                    chatRoomId = it.chatRoom.id!!,
                     content = it.content,
                     nickname = it.member.user.nickname,
                     status = it.status,
@@ -83,6 +91,13 @@ class ChatService(
                 chatRepository.findNextPage(chatRoomId, cursor, pageable).map { it.toResponse() }
             }
         }
+    }
+
+    // 테스트용 채팅방 불러오기
+    fun getAllChatRoom(userPrincipal: UserPrincipal):List<ChatRoom>{
+        val members= memberRepository.findAllByUserId(userPrincipal.id)
+        val chatRooms= members.map { it.chatRoom }
+        return chatRooms
     }
 
     private fun getUserInfo(userPrincipal: UserPrincipal) =
