@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Component
 import team.b2.bingojango.domain.user.repository.UserRepository
@@ -15,6 +16,7 @@ import java.time.Instant
 import java.util.*
 
 @Component
+@PropertySource("classpath:application.yml")
 class JwtPlugin(
     @Value("\${auth.jwt.issuer}") private val issuer: String,
     @Value("\${auth.jwt.secret}") private val secret: String,
