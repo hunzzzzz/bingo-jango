@@ -22,9 +22,9 @@ repositories {
 
 val awsVersion = "2.2.6.RELEASE"
 val jjwtVersion = "0.12.5"
-val kotestVersion = "5.8.0"
+val kotestVersion = "5.5.5"
 val kotestExtensionVersion = "4.4.3"
-val mockkVersion = "1.3.10"
+val mockkVersion = "1.3.8"
 val processorVersion = "3.2.3"
 val queryDslVersion = "5.0.0"
 val slackVersion = "1.38.1"
