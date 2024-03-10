@@ -2,6 +2,7 @@ package team.b2.bingojango.domain.purchase.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -10,6 +11,7 @@ import team.b2.bingojango.domain.purchase.model.PurchaseStatus
 import team.b2.bingojango.domain.purchase.service.PurchaseService
 import team.b2.bingojango.global.security.util.UserPrincipal
 
+@Tag(name = "purchase", description = "공동구매")
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/purchase")
 class PurchaseController(

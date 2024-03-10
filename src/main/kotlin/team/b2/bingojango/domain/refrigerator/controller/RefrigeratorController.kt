@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.refrigerator.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -14,6 +15,7 @@ import team.b2.bingojango.domain.refrigerator.dto.response.RefrigeratorResponse
 import team.b2.bingojango.domain.refrigerator.service.RefrigeratorService
 import team.b2.bingojango.global.security.util.UserPrincipal
 
+@Tag(name = "refrigerator", description = "냉장고")
 @RestController
 @RequestMapping("/api/v1/refrigerator")
 class RefrigeratorController(
