@@ -81,7 +81,7 @@ class RefrigeratorService(
         val members = memberRepository.findAllByRefrigerator(refrigerator)
         return members.sortedWith(compareBy<Member>{it.role}.thenBy{it.createdAt}).map { member ->
             MemberResponse(
-                    name = member.user.name,
+                    name = member.user.nickname,
                     role = member.role,
                     createdAt = member.createdAt
             )

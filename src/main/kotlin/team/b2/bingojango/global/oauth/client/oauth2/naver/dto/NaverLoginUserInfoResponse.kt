@@ -8,9 +8,11 @@ import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy::class)
 class NaverLoginUserInfoResponse(
     id: String,
-    nickname: String
+    nickname: String,
+    email: String,
 ) : OAuth2LoginUserInfo(
     provider = OAuth2Provider.NAVER,
     id = id,
-    nickname = nickname
+    nickname = nickname,
+    email = email
 )
