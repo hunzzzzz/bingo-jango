@@ -17,14 +17,16 @@ class OAuth2LoginController(
     private val oAuth2LoginService: OAuth2LoginService,
     private val oAuth2ClientService: OAuth2ClientService
 ) {
+    //유저가 소셜로그인 요청 시, 로그인 페이지로 Redirect 해준다.
     @Operation(summary = "로그인 페이지로 Redirect 해주기")
     @GetMapping("/oauth2/login/{provider}")
     fun redirectLoginPage(@PathVariable provider: OAuth2Provider, response: HttpServletResponse) {
-        oAuth2ClientService.generateLoginPageUrl(provider)
-            .let { response.sendRedirect(it) }
+        val loginPageUrl = oAuth2ClientService.generateLoginPageUrl(provider)
+        response.sendRedirect(loginPageUrl)
     }
 
-    @Operation(summary = "AuthorizationCode 를 이용해 사용자 인증 처리")
+    //카카오에게 받은 인증코드로 회원정보를 얻고, 유저에게 우리 서버의 access token을 반환한다.
+    @Operation(summary = "authorizationCode ")
     @GetMapping("/oauth2/callback/{provider}")
     fun callback(
         @PathVariable provider: OAuth2Provider,
