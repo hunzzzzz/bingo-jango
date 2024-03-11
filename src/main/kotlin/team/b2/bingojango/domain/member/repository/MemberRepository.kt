@@ -18,4 +18,6 @@ interface MemberRepository : JpaRepository<Member, Long> {
     fun findAllByUserId(userId: Long): List<Member>
 
     fun findByUserAndChatRoom(user: User, chatRoom: ChatRoom): Member?
+
+    fun findByUserId (userId: Long): Member?
 }

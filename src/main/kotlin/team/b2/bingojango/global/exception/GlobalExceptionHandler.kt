@@ -101,6 +101,10 @@ class GlobalExceptionHandler(
     fun handleAlreadyExistsFoodException(e: AlreadyExistsFoodException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
+    @ExceptionHandler(AlreadyHaveStaffAccessException::class)
+    fun handleAlreadyHaveStaffAccessException(e: AlreadyHaveStaffAccessException) =
+            ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
     private fun getErrorResponse(httpStatus: HttpStatus, e: Exception) = when (httpStatus) {
         HttpStatus.BAD_REQUEST -> ErrorResponse(
                 httpStatus = "400 Bad Request",
