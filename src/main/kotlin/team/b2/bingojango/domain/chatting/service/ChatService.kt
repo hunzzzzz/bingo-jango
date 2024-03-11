@@ -21,6 +21,7 @@ import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.jwt.JwtAuthenticationToken
+import team.b2.bingojango.global.security.jwt.JwtPlugin
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
@@ -34,13 +35,14 @@ class ChatService(
     // 채팅 전송
     @Transactional
     fun sendMessage(
-        headerAccessor: StompHeaderAccessor,
+        userPrincipal: UserPrincipal,
         request: ChatRequest,
     ): ChatResponse {
-        println("${headerAccessor.user}")
-        val authorHeader= headerAccessor.getFirstNativeHeader("Authorization")
-        val userInfo= (headerAccessor.user as JwtAuthenticationToken).principal
-        val user = getUserInfo(userInfo)
+//        println("hA값 $headerAccessor")
+//        println("hA.u 값 ${headerAccessor.user}")
+//        val authorHeader= headerAccessor.getFirstNativeHeader("Authorization")
+//        val userInfo= (headerAccessor.user as JwtAuthenticationToken).principal )
+        val user = getUserInfo(userPrincipal)
         val chatRoom = getChatRoomInfo(request.chatRoomId.toLong())
         val member = getMemberInfo(user, chatRoom)
 
@@ -94,9 +96,9 @@ class ChatService(
     }
 
     // 테스트용 채팅방 불러오기
-    fun getAllChatRoom(userPrincipal: UserPrincipal):List<ChatRoom>{
-        val members= memberRepository.findAllByUserId(userPrincipal.id)
-        val chatRooms= members.map { it.chatRoom }
+    fun getAllChatRoom(userPrincipal: UserPrincipal): List<ChatRoom> {
+        val members = memberRepository.findAllByUserId(userPrincipal.id)
+        val chatRooms = members.map { it.chatRoom }
         return chatRooms
     }
 

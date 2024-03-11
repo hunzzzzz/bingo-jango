@@ -92,8 +92,9 @@
                 chatRoomId: chatRoomId,
                 content: content
             };
+            let headers= {Authorization:`${accessToken}`}
 
-            stompClient.send("/pub/chatroom/sendMessage", {}, JSON.stringify(message));
+            stompClient.send("/pub/chatroom/sendMessage", headers, JSON.stringify(message));
             document.getElementById('messageContent').value = '';
         }
 
