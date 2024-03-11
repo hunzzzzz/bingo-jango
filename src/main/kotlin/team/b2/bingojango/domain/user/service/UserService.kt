@@ -3,8 +3,6 @@ package team.b2.bingojango.domain.user.service
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.mail.SimpleMailMessage
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -34,7 +32,6 @@ class UserService(
     private val jwtPlugin: JwtPlugin,
     private val mailService: MailService,
     private val tokenGenerator: TokenGenerator,
-    private val javaMailSender: JavaMailSender,
     private val tokenUtil: TokenUtil,
     private val memberRepository: MemberRepository
 ) {
@@ -68,52 +65,69 @@ class UserService(
         CookieUtil.deleteCookie(request,response,"refreshToken") //RefreshToken 쿠키 삭제
     }
 
-    //회원가입 성공 및 실패
+    // 회원가입 성공 및 실패
     fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
         try {
-            // 회원가입 요청에서 받은 정보를 사용하여 회원가입 처리를 수행
-            // 회원가입이 성공적으로 완료되었다고 가정
+            // 비밀번호 유효성 검사
+            validatePassword(signUpRequest.password, signUpRequest.passwordConfirm)
+
+            // 필수 필드에 빈 문자열("")이 있는지 확인
+            if (signUpRequest.name.isBlank() || signUpRequest.email.isBlank() || signUpRequest.phone.isBlank() || signUpRequest.password.isBlank()) {
+                throw IllegalArgumentException("모든 필수 필드를 입력해주세요.")
+            }
+
+            // 이메일 형식 검사
+            if (!isValidEmail(signUpRequest.email)) {
+                throw IllegalArgumentException("올바른 이메일 형식이 아닙니다.")
+            }
+
+            // 전화번호 형식 검사
+            if (!isValidPhoneNumber(signUpRequest.phone)) {
+                throw IllegalArgumentException("올바른 전화번호 형식이 아닙니다.")
+            }
+
+            // 이메일 중복 검사
+            if (userRepository.existsByEmail(signUpRequest.email)) {
+                throw IllegalArgumentException("이미 등록된 이메일 주소입니다.")
+            }
+
+            // 닉네임 중복 검사
+            if (userRepository.existsByNickname(signUpRequest.nickname)) {
+                throw IllegalArgumentException("이미 사용 중인 닉네임입니다.")
+            }
+
+            // 회원가입 처리
             val createdUserId = create(signUpRequest)
 
-            //회원가입이 성공적으로 완료된 경우
             val success = true
             val message = "회원가입이 성공적으로 완료되었습니다."
 
-            // 회원가입 요청에서 받은 정보를 사용하여 SignUpResponse 객체를 생성
-            val signUpResponse = SignUpResponse(
-                    role = signUpRequest.role.toString(),
-                    name = signUpRequest.name,
-                    nickname = signUpRequest.nickname,
-                    email = signUpRequest.email,
-                    phone = signUpRequest.phone,
-                    status = signUpRequest.status.toString(),
-                    createdAt = LocalDateTime.now(), // 현재 시각을 생성일로 설정하거나, DB에 저장된 시간을 사용할 수 있음
-                    updatedAt = LocalDateTime.now(), // 생성 시각과 동일하게 설정하거나, 회원 정보 수정 시각을 사용할 수 있음
-                    id = createdUserId, // 실제 생성된 회원의 id 값
-                    success = success,
-                    message = message
+            return SignUpResponse(
+                name = signUpRequest.name,
+                nickname = signUpRequest.nickname,
+                email = signUpRequest.email,
+                phone = signUpRequest.phone,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now(),
+                id = createdUserId,
+                success = success,
+                message = message
             )
-            return signUpResponse
-        } catch (e: Exception) {
-            // 회원가입이 실패한 경우
+        } catch (e: IllegalArgumentException) {
             val success = false
-            val message = "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
+            val message = e.message ?: "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
 
-            val signUpResponse = SignUpResponse(
-                    role = signUpRequest.role.toString(),
-                    name = signUpRequest.name,
-                    nickname = signUpRequest.nickname,
-                    email = signUpRequest.email,
-                    phone = signUpRequest.phone,
-                    status = signUpRequest.status.toString(),
-                    createdAt = LocalDateTime.now(), // 현재 시각을 생성일로 설정하거나, DB에 저장된 시간을 사용할 수 있음
-                    updatedAt = LocalDateTime.now(), // 생성 시각과 동일하게 설정하거나, 회원 정보 수정 시각을 사용할 수 있음
-                    id = 0,
-                    success = success,
-                    message = message
+            return SignUpResponse(
+                name = signUpRequest.name,
+                nickname = signUpRequest.nickname,
+                email = signUpRequest.email,
+                phone = signUpRequest.phone,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now(),
+                id = 0,
+                success = success,
+                message = message
             )
-
-            return signUpResponse
         }
     }
 
@@ -136,17 +150,27 @@ class UserService(
         }
     }
 
+    // 이메일 형식 검사 함수
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,6}\$")
+        return emailPattern.matches(email)
+    }
+
+    // 전화번호 형식 검사 함수
+    private fun isValidPhoneNumber(phone: String): Boolean {
+        val phonePattern = Regex("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}\$")
+        return phonePattern.matches(phone)
+    }
+
     fun create(signUpRequest: SignUpRequest): Long {
         //회원가입 요청에서 받은 정보로 User 객체 생성
         val newUser = User(
-                role = signUpRequest.role,
                 name = signUpRequest.name,
                 nickname = signUpRequest.nickname,
                 email = signUpRequest.email,
                 phone = signUpRequest.phone,
-                password = passwordEncoder.encode(signUpRequest.password),
-                status = signUpRequest.status
-        )
+                password = passwordEncoder.encode(signUpRequest.password)
+            )
 
         // 사용자 저장
         val savedUser = userRepository.save(newUser)
@@ -156,6 +180,7 @@ class UserService(
     }
 
     // 이메일 찾기
+// 이메일 찾기
     fun findEmail(request: FindEmailRequest): FindEmailResponse {
         // 실명과 폰 번호로 사용자를 찾습니다.
         val user = userRepository.findByNameAndPhone(request.name, request.phone)
@@ -164,21 +189,39 @@ class UserService(
         // 사용자의 이메일을 가져옵니다.
         val email = user.email
 
-        // 이메일의 일부를 숨깁니다. 예를 들어, 처음 5글자만 표시하고 나머지는 '*'로 대체합니다.
-        val visibleLength = 5
-        val hiddenEmail = email.take(visibleLength) + "*".repeat(email.length - visibleLength)
+        // 이메일을 마스킹하여 반환합니다.
+        val maskedEmail = maskEmail(email)
 
-        return FindEmailResponse(hiddenEmail)
+        return FindEmailResponse(maskedEmail)
     }
 
-    //send mail 매서드 추가
-    fun sendMail(to: String, subject: String, body: String) {
-        val message = SimpleMailMessage().apply {
-            setTo(to)
-            setSubject(subject)
-            setText(body)
+    // 이메일 마스킹 함수
+    fun maskEmail(email: String): String {
+        val atIndex = email.indexOf('@')
+        if (atIndex == -1) {
+            // @ 문자가 없는 이메일 형식일 경우 그대로 반환
+            return email
         }
-        javaMailSender.send(message)
+
+        val username = email.substring(0, atIndex)
+        val domain = email.substring(atIndex)
+        val maskedUsername = maskString(username, 5) // 아이디 부분을 5글자로 숨김 처리
+
+        return "$maskedUsername$domain"
+    }
+
+    // 문자열 마스킹 함수
+    fun maskString(str: String, visibleChars: Int): String {
+        val maskedLength = str.length - visibleChars
+        if (maskedLength <= 0) {
+            // 숨길 문자가 없는 경우 그대로 반환
+            return str
+        }
+
+        val maskedChars = "*".repeat(maskedLength)
+        val visibleCharsStr = str.substring(0, visibleChars)
+
+        return "$visibleCharsStr$maskedChars"
     }
 
     //비밀번호 찾기

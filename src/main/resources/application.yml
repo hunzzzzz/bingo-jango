@@ -8,6 +8,7 @@ spring:
     include: [oauth]
 
   # Mail
+  spring:
   mail:
     host: ${MAIL_HOST}
     port: 587
