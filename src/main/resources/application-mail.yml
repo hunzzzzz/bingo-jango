@@ -1,0 +1,22 @@
+spring:
+  # Settings
+  config:
+    activate:
+      on-profile: mail
+  # Mail
+  mail:
+    host: ${MAIL_HOST}
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: ${MAIL_CONNECTION_TIMEOUT}
+          timeout: ${MAIL_TIMEOUT}
+          writetimeout: ${MAIL_WRITE_TIMEOUT}
+    auth-code-expiration-millis: ${MAIL_AUTH_CODE_EXPIRATION_MILLIS}

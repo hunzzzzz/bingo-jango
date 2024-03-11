@@ -11,7 +11,7 @@ import team.b2.bingojango.global.entity.BaseEntity
 class Member(
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
-    val role: MemberRole,
+    var role: MemberRole,
 
     @ManyToOne
     @JoinColumn(name = "user_id")

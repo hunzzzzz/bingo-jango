@@ -3,14 +3,12 @@ spring:
   config:
     activate:
       on-profile: oauth
-  # OAuth2
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientId: ${GOOGLE_CLIENT_ID}
-            clientSecret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
+# OAUTH2
+oauth2:
+  kakao:
+    client_id: ${OAUTH2_KAKAO_CLIENT_ID}
+    redirect_url: "http://localhost:8080/oauth2/callback/kakao"
+  naver:
+    client_id: ${OAUTH2_NAVER_CLIENT_ID}
+    client_secret: ${OAUTH2_NAVER_CLIENT_SECRET}
+    redirect_url: "http://localhost:8080/oauth2/callback/naver"

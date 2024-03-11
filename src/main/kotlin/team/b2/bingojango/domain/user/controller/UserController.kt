@@ -47,7 +47,7 @@ class UserController(
             .body(userService.logout(userPrincipal, request, response))
     }
 
-    // 회원가입 요청 처리
+    @Operation(summary = "회원가입")
     @PostMapping("/signup")
     fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
         // UserService 내부에서 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
@@ -62,7 +62,7 @@ class UserController(
         return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 성공적으로 완료되었습니다.")
     }
 
-    //내 프로필 조회
+    @Operation(summary = "본인 프로필 조회")
     @GetMapping("/me")
     fun getMyProfile(
             @AuthenticationPrincipal userPrincipal: UserPrincipal
@@ -73,7 +73,7 @@ class UserController(
                 .body(userService.getMyProfile(userPrincipal))
     }
 
-    //회원조회
+    @Operation(summary = "타인 프로필 조회")
     @GetMapping("/users/{userId}")
     fun getUser(
             @PathVariable userId: Long,
@@ -85,7 +85,7 @@ class UserController(
 
     }
 
-    // 프로필 수정
+    @Operation(summary = "프로필 수정")
     @PatchMapping("mypage/update")
     fun updateUserProfile(
         @RequestBody editRequest: EditRequest,
@@ -97,7 +97,7 @@ class UserController(
             .body("정보가 변경되었습니다.")
     }
 
-    // 비밀번호 변경
+    @Operation(summary = "비밀번호 변경")
     @PatchMapping("mypage/change-pwd")
     fun updateUserPassword(
         @RequestBody passwordRequest: PasswordRequest,
@@ -109,28 +109,28 @@ class UserController(
             .body("비밀번호가 변경되었습니다.")
     }
 
-    // 이메일 찾기
+    @Operation(summary = "이메일 찾기")
     @PostMapping("/find-email")
     fun findEmail(@RequestBody request: FindEmailRequest): ResponseEntity<FindEmailResponse> {
         val response = userService.findEmail(request)
         return ResponseEntity.ok(response)
     }
 
-    //비밀번호 찾기
+    @Operation(summary = "비밀번호 찾기")
     @PostMapping("/find-password")
     fun findPassword(@RequestBody request: FindPasswordRequest): ResponseEntity<Any> {
         userService.findPassword(request)
         return ResponseEntity.ok().build()
     }
 
-    //비밀번호 재설정
+    @Operation(summary = "비밀번호 재설정")
     @PostMapping("/reset-password")
     fun resetPassword(@RequestBody request: PasswordResetRequest): ResponseEntity<Any> {
         userService.resetPassword(request)
         return ResponseEntity.ok().build()
     }
 
-    // 회원 탈퇴
+    @Operation(summary = "회원 탈퇴 (SoftDelete, Scheduled)")
     @PutMapping("mypage/withdraw")
     fun withdrawUser(
         @Parameter(description = "password 만 입력")

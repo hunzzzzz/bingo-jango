@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.food.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,13 +13,14 @@ import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
 
+@Tag(name = "food", description = "음식")
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/foods")
 class FoodController(
     private val foodService: FoodService
 ) {
 
-    @Operation(summary = "냉장고의 음식 조회")
+    @Operation(summary = "음식 조회")
     @GetMapping
     fun getFood(
             @PathVariable refrigeratorId: Long
@@ -28,7 +30,7 @@ class FoodController(
                 .body(foodService.getFood(refrigeratorId))
     }
 
-    @Operation(summary = "냉장고에 음식 추가")
+    @Operation(summary = "음식 추가")
     @PostMapping
     fun addFood(
         @PathVariable refrigeratorId: Long,
@@ -38,7 +40,7 @@ class FoodController(
         return ResponseEntity(HttpStatus.CREATED)
     }
 
-    @Operation(summary = "냉장고의 음식 수정")
+    @Operation(summary = "음식 수정")
     @PutMapping("/{foodId}")
     fun updateFood(
         @PathVariable refrigeratorId: Long,
@@ -49,7 +51,7 @@ class FoodController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @Operation(summary = "냉장고의 음식 수량 수정")
+    @Operation(summary = "음식 수량 수정")
     @PatchMapping("/{foodId}")
     fun updateFoodCount(
         @PathVariable refrigeratorId: Long,
@@ -60,7 +62,7 @@ class FoodController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @Operation(summary = "냉장고의 음식 삭제")
+    @Operation(summary = "음식 삭제")
     @DeleteMapping("/{foodId}")
     fun deleteFood(
         @PathVariable refrigeratorId: Long,
@@ -70,7 +72,7 @@ class FoodController(
         return ResponseEntity.noContent().build()
     }
 
-    @Operation(summary = "냉장고의 음식 검색 및 정렬")
+    @Operation(summary = "음식 검색 및 정렬")
     @GetMapping("/search")
     fun searchFood(
         @PathVariable refrigeratorId: Long,
