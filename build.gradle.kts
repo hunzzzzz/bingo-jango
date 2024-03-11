@@ -20,24 +20,48 @@ repositories {
     mavenCentral()
 }
 
+val awsVersion = "2.2.6.RELEASE"
+val jjwtVersion = "0.12.5"
+val kotestVersion = "5.5.5"
+val kotestExtensionVersion = "4.4.3"
+val mockkVersion = "1.13.8"
+val processorVersion = "3.2.3"
 val queryDslVersion = "5.0.0"
+val slackVersion = "1.38.1"
+val swaggerVersion = "2.3.0"
 
 dependencies {
+    // ACTUATOR
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // AWS
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+    // MAIL
+    implementation("org.springframework.boot:spring-boot-starter-mail")
     // DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
+    // OAuth2
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    // QueryDSL
+    implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
+    kapt("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
     // SECURITY
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+    implementation("io.jsonwebtoken:jjwt-api:${jjwtVersion}")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:${jjwtVersion}")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${jjwtVersion}")
     // SLACK
-    implementation("com.slack.api:slack-api-client:1.38.1")
+    implementation("com.slack.api:slack-api-client:${slackVersion}")
     // SWAGGER
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}")
     // TEST
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+    implementation("org.springframework.boot:spring-boot-configuration-processor:${processorVersion}")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:${kotestVersion}")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:${kotestVersion}")
+    implementation("io.kotest:kotest-extensions-spring:${kotestExtensionVersion}")
+    testImplementation("io.mockk:mockk:${mockkVersion}")
     // VALIDATION
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // WEBSOCKET
@@ -49,11 +73,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    // QueryDSL
-    implementation("com.querydsl:querydsl-jpa:$queryDslVersion:jakarta")
-    kapt("com.querydsl:querydsl-apt:$queryDslVersion:jakarta")
-    // MAIL
-    implementation("org.springframework.boot:spring-boot-starter-mail")
 }
 
 tasks.withType<KotlinCompile> {
@@ -63,6 +82,6 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach() {
     useJUnitPlatform()
 }

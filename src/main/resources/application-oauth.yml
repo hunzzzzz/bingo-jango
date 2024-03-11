@@ -1,0 +1,14 @@
+spring:
+  # Settings
+  config:
+    activate:
+      on-profile: oauth
+# OAUTH2
+oauth2:
+  kakao:
+    client_id: ${OAUTH2_KAKAO_CLIENT_ID}
+    redirect_url: "http://localhost:8080/oauth2/callback/kakao"
+  naver:
+    client_id: ${OAUTH2_NAVER_CLIENT_ID}
+    client_secret: ${OAUTH2_NAVER_CLIENT_SECRET}
+    redirect_url: "http://localhost:8080/oauth2/callback/naver"

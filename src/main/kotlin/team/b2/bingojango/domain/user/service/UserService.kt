@@ -3,28 +3,27 @@ package team.b2.bingojango.domain.user.service
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import team.b2.bingojango.domain.mail.service.MailService
 import team.b2.bingojango.domain.member.repository.MemberRepository
-import team.b2.bingojango.domain.user.dto.request.EditRequest
-import team.b2.bingojango.domain.user.dto.request.LoginRequest
-import team.b2.bingojango.domain.user.dto.request.PasswordRequest
-import team.b2.bingojango.domain.user.dto.request.SignUpRequest
-import team.b2.bingojango.domain.user.dto.response.LoginResponse
-import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
-import team.b2.bingojango.domain.user.dto.response.SignUpResponse
-import team.b2.bingojango.domain.user.dto.response.UserResponse
+import team.b2.bingojango.domain.user.dto.request.*
+import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.model.UserStatus
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.security.util.UserPrincipal
-import team.b2.bingojango.global.security.util.CookieUtil
+import team.b2.bingojango.global.exception.cases.UserNotFoundException
+import team.b2.bingojango.global.security.TokenGenerator
 import team.b2.bingojango.global.security.jwt.JwtPlugin
+import team.b2.bingojango.global.security.util.CookieUtil
 import team.b2.bingojango.global.security.util.TokenUtil
+import team.b2.bingojango.global.security.util.UserPrincipal
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
@@ -33,6 +32,9 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtPlugin: JwtPlugin,
+    private val mailService: MailService,
+    private val tokenGenerator: TokenGenerator,
+    private val javaMailSender: JavaMailSender,
     private val tokenUtil: TokenUtil,
     private val memberRepository: MemberRepository
 ) {
@@ -143,21 +145,91 @@ class UserService(
                 email = signUpRequest.email,
                 phone = signUpRequest.phone,
                 password = passwordEncoder.encode(signUpRequest.password),
-                status = signUpRequest.status
+                status = signUpRequest.status,
+                provider = null,
+                providerId = null
         )
 
         // 사용자 저장
         val savedUser = userRepository.save(newUser)
 
-// 저장된 사용자의 ID 반환
+        // 저장된 사용자의 ID 반환
         return savedUser.id ?: throw IllegalStateException("Failed to create user")
     }
 
+    // 이메일 찾기
+    fun findEmail(request: FindEmailRequest): FindEmailResponse {
+        // 실명과 폰 번호로 사용자를 찾습니다.
+        val user = userRepository.findByNameAndPhone(request.name, request.phone)
+            ?: throw UserNotFoundException("사용자를 찾을 수 없습니다.")
+
+        // 사용자의 이메일을 가져옵니다.
+        val email = user.email
+
+        // 이메일의 일부를 숨깁니다. 예를 들어, 처음 5글자만 표시하고 나머지는 '*'로 대체합니다.
+        val visibleLength = 5
+        val hiddenEmail = email.take(visibleLength) + "*".repeat(email.length - visibleLength)
+
+        return FindEmailResponse(hiddenEmail)
+    }
+
+    //send mail 매서드 추가
+    fun sendMail(to: String, subject: String, body: String) {
+        val message = SimpleMailMessage().apply {
+            setTo(to)
+            setSubject(subject)
+            setText(body)
+        }
+        javaMailSender.send(message)
+    }
+
+    //비밀번호 찾기
+    fun findPassword(request: FindPasswordRequest) {
+        // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
+        val user = userRepository.findByEmail(request.email)
+            ?: throw UserNotFoundException("User not found with email: ${request.email}")
+
+        // 임시 비밀번호 생성
+        val newPassword = tokenGenerator.generateToken()
+
+        // 비밀번호 업데이트
+        user.password = newPassword
+
+        // 사용자 정보 저장 (비밀번호 업데이트)
+        userRepository.save(user)
+
+        // 이메일로 임시 비밀번호 전송
+        val subject = "임시 비밀번호 발급 안내"
+        val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
+        mailService.sendEmail(user.email, subject, body)
+    }
+    
+    //비밀번호 재설정
+    fun resetPassword(request: PasswordResetRequest) {
+        // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
+        val user = userRepository.findByEmail(request.email)
+            ?: throw UserNotFoundException("User not found with email: ${request.email}")
+
+        // 임시 비밀번호 생성
+        val newPassword = tokenGenerator.generateToken()
+
+        // 비밀번호 업데이트
+        user.password = newPassword
+
+        // 사용자 정보 저장 (비밀번호 업데이트)
+        userRepository.save(user)
+
+        // 이메일로 임시 비밀번호 전송
+        val subject = "임시 비밀번호 발급 안내"
+        val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
+        mailService.sendEmail(user.email, subject, body)
+    }
+    
     //로그인한 본인 프로필 보기
     @Transactional
     fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("Id")
-        return MyProfileResponse(
+        return MyProfileResponse (
                 name = user.name,
                 nickname = user.nickname,
                 email = user.email,
@@ -166,12 +238,6 @@ class UserService(
                 createdAt = user.createdAt
         )
     }
-
-    /*
-        리턴값이 MyProfileResponse가 될수도 있고, UserResponse가 될 수도 있음
-        '상속' 개념을 사용해서
-        상위 개념(UserResponse) - 하위 개념(MyProfileResponse)
-     */
 
     //타인 프로필 보기
     //본인 아이디랑 받아온 아이디 같으면 내 프로필보기로 넘기기

@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.vote.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -9,6 +10,7 @@ import team.b2.bingojango.domain.vote.dto.request.VoteRequest
 import team.b2.bingojango.domain.vote.service.VoteService
 import team.b2.bingojango.global.security.util.UserPrincipal
 
+@Tag(name = "vote", description = "투표")
 @RestController
 @RequestMapping("/api/v1/refrigerator/{refrigeratorId}/vote")
 class VoteController(

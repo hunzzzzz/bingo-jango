@@ -15,14 +15,14 @@ import team.b2.bingojango.global.security.jwt.JwtAuthenticationFilter
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val authenticationEntryPoint: AuthenticationEntryPoint,
-    private val accessDeniedHandler: AccessDeniedHandler
+    private val accessDeniedHandler: AccessDeniedHandler,
 ) {
-
     //모든 사용자에게 접근 허용
     private val allowedUrls = arrayOf(
         "/swagger-ui/**",
         "/v3/**",
         "/h2-console/**",
+        "/oauth2/**",
         "/**" // TODO : 추후 삭제
     )
 
@@ -45,11 +45,11 @@ class SecurityConfig(
                         .requestMatchers(*anonymousUrls).anonymous()
                         .anyRequest().authenticated()
             }
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling {
                 it.authenticationEntryPoint(authenticationEntryPoint)
                 it.accessDeniedHandler(accessDeniedHandler)
             }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }
 }
