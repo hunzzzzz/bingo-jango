@@ -11,7 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.user.dto.request.*
-import team.b2.bingojango.domain.user.dto.response.*
+import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
+import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
 
@@ -46,13 +49,17 @@ class UserController(
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    fun signUp(
-        @RequestBody signUpRequest: SignUpRequest
-    ): ResponseEntity<SignUpResponse> {
-        val signUpResponse = userService.signUp(signUpRequest)
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(signUpResponse)
+    fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
+        // UserService 내부에서 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
+        try {
+            userService.signUp(signUpRequest)
+        } catch (e: IllegalArgumentException) {
+            // 비밀번호 유효성 검사에 실패한 경우 에러 응답 반환
+            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다.")
+        }
+
+        // 회원가입 성공 시 성공 응답 반환
+        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 성공적으로 완료되었습니다.")
     }
 
     @Operation(summary = "본인 프로필 조회")
