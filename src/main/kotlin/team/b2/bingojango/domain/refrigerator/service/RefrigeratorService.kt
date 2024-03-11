@@ -83,6 +83,7 @@ class RefrigeratorService(
             MemberResponse(
                     name = member.user.nickname,
                     role = member.role,
+                    memberId = member.id!!,
                     createdAt = member.createdAt
             )
         }
