@@ -145,7 +145,9 @@ class UserService(
                 email = signUpRequest.email,
                 phone = signUpRequest.phone,
                 password = passwordEncoder.encode(signUpRequest.password),
-                status = signUpRequest.status
+                status = signUpRequest.status,
+                provider = null,
+                providerId = null
         )
 
         // 사용자 저장
@@ -227,7 +229,7 @@ class UserService(
     @Transactional
     fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("Id")
-        return MyProfileResponse(
+        return MyProfileResponse (
                 name = user.name,
                 nickname = user.nickname,
                 email = user.email,
