@@ -170,7 +170,6 @@ class UserService(
                 email = signUpRequest.email,
                 phone = signUpRequest.phone,
                 password = passwordEncoder.encode(signUpRequest.password),
-                status = signUpRequest.status,
                 provider = null,
                 providerId = null
         )
