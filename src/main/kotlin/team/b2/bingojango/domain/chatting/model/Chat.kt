@@ -33,6 +33,7 @@ class Chat(
 
 fun Chat.toResponse(): ChatResponse {
     return ChatResponse(
+        chatRoomId = chatRoom.id!!,
         content = content,
         nickname = member.user.nickname,
         status = status,

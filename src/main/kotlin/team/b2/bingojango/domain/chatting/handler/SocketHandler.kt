@@ -23,11 +23,13 @@ class SocketHandler(
     // 클라이언트와 서버 연결시 호출
     override fun afterConnectionEstablished(session: WebSocketSession) {
         sessionList.add(session)
+        println("새 클라이언트와 연결됨")
     }
 
     // 클라이언트와 서버 단절시 호출
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
         sessionList.remove(session)
+        println("클라이언트와 연결 해제됨")
     }
 
 }
