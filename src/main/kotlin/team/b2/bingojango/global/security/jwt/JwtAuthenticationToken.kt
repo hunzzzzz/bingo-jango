@@ -7,12 +7,12 @@ import java.io.Serializable
 
 class JwtAuthenticationToken(
     private val principal: UserPrincipal,
-    details: WebAuthenticationDetails,
+    details: WebAuthenticationDetails?,
 ) : AbstractAuthenticationToken(principal.authorities), Serializable {
 
     init {
         super.setAuthenticated(true)
-        super.setDetails(details)
+        if (details != null)super.setDetails(details)
     }
     override fun getPrincipal() = principal
     override fun getCredentials() = null

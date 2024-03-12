@@ -66,6 +66,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // WEBSOCKET
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.webjars:sockjs-client:1.1.2")
+    implementation("org.webjars:stomp-websocket:2.3.3-1")
     // WEB
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
