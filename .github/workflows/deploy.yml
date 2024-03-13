@@ -1,0 +1,33 @@
+name: CD Bingo
+
+on:
+  push:
+    branches: [ main, dev ]  # 추후 수정
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set-up SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Set-up known hosts
+        run: |
+          echo "${{secrets.SSH_KNOWN_HOSTS}}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: | 
+          ssh ${{secrets.SSH_USERNAME}}@${{secrets.SSH_PUBLIC_IP}} "
+          cd bingo-jango || exit 1
+          git pull origin dev || exit 1
+          ./gradlew build || exit 1
+          cd build/libs
+          sudo java -jar bingo-jango-0.0.1-SNAPSHOT.jar
+          "
