@@ -182,7 +182,6 @@ class UserService(
     }
 
     // 이메일 찾기
-// 이메일 찾기
     fun findEmail(request: FindEmailRequest): FindEmailResponse {
         // 실명과 폰 번호로 사용자를 찾습니다.
         val user = userRepository.findByNameAndPhone(request.name, request.phone)
