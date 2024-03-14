@@ -105,11 +105,6 @@ class GlobalExceptionHandler(
     fun handleAlreadyHaveStaffAccessException(e: AlreadyHaveStaffAccessException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
-    @ExceptionHandler(MustAssignException::class)
-    fun handleMustAssignException(e: MustAssignException) =
-            ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
-
-
     private fun getErrorResponse(httpStatus: HttpStatus, e: Exception) = when (httpStatus) {
         HttpStatus.BAD_REQUEST -> ErrorResponse(
                 httpStatus = "400 Bad Request",

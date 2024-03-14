@@ -35,10 +35,7 @@ class User(
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    var status: UserStatus = UserStatus.NORMAL,
-
-    @Column(name = "image", nullable = true)
-    var image: String?
+    var status: UserStatus = UserStatus.NORMAL
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

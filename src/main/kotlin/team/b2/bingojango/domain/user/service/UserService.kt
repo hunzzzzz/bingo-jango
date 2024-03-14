@@ -1,7 +1,11 @@
 package team.b2.bingojango.domain.user.service
 
+import com.twilio.Twilio
+import com.twilio.rest.api.v2010.account.Message
+import com.twilio.type.PhoneNumber
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -24,16 +28,18 @@ import team.b2.bingojango.global.security.util.TokenUtil
 import team.b2.bingojango.global.security.util.UserPrincipal
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import kotlin.random.Random
 
 @Service
-class UserService(
+class UserService @Autowired constructor(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtPlugin: JwtPlugin,
     private val mailService: MailService,
     private val tokenGenerator: TokenGenerator,
     private val tokenUtil: TokenUtil,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val twilioSmsService: TwilioSmsService
 ) {
     //로그인
     fun login(request: LoginRequest,
@@ -68,9 +74,6 @@ class UserService(
     // 회원가입 성공 및 실패
     fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
         try {
-            // 비밀번호 유효성 검사
-            validatePassword(signUpRequest.password, signUpRequest.passwordConfirm)
-
             // 필수 필드에 빈 문자열("")이 있는지 확인
             if (signUpRequest.name.isBlank() || signUpRequest.email.isBlank() || signUpRequest.phone.isBlank() || signUpRequest.password.isBlank()) {
                 throw IllegalArgumentException("모든 필수 필드를 입력해주세요.")
@@ -99,8 +102,13 @@ class UserService(
             // 회원가입 처리
             val createdUserId = create(signUpRequest)
 
+            // Twilio를 사용하여 SMS 보내기
+            val verificationCode = generateVerificationCode()
+            val smsmessage = "Your verification code is: $verificationCode"
+            twilioSmsService.sendSms(signUpRequest.phone, smsmessage)
+
             val success = true
-            val message = "회원가입이 성공적으로 완료되었습니다."
+            val successmessage = "회원가입이 성공적으로 완료되었습니다."
 
             return SignUpResponse(
                 name = signUpRequest.name,
@@ -111,7 +119,7 @@ class UserService(
                 updatedAt = LocalDateTime.now(),
                 id = createdUserId,
                 success = success,
-                message = message
+                message = successmessage
             )
         } catch (e: IllegalArgumentException) {
             val success = false
@@ -131,22 +139,29 @@ class UserService(
         }
     }
 
-    // 비밀번호 유효성 검사 메서드 추가
-    private fun validatePassword(password: String, passwordConfirm: String) {
-        // 비밀번호 길이 확인
-        if (password.length !in 8..16) {
-            throw IllegalArgumentException("비밀번호는 8~16자 이어야 합니다.")
+    // 사용자 인증 코드 생성
+    private fun generateVerificationCode(): String {
+        val random = Random.Default
+        return (100000..999999).random(random).toString() // 6자리 무작위 숫자 생성
+    }
+
+    class TwilioSmsService(accountSid: String, authToken: String) {
+
+        init {
+            Twilio.init(accountSid, authToken)
         }
 
-        // 비밀번호 패턴 확인
-        val passwordPattern = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@\$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,16}$")
-        if (!password.matches(passwordPattern)) {
-            throw IllegalArgumentException("비밀번호는 알파벳 대소문자, 숫자, 특수문자를 포함해야 합니다.")
-        }
+        fun sendSms(to: String, message: String) {
+            val from = PhoneNumber("YOUR_TWILIO_PHONE_NUMBER")
+            val toPhoneNumber = PhoneNumber(to)
 
-        // 비밀번호 확인과의 일치 확인
-        if (password != passwordConfirm) {
-            throw IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
+            val sms = Message.creator(
+                toPhoneNumber,
+                from,
+                message
+            ).create()
+
+            println("SMS sent with SID: ${sms.sid}")
         }
     }
 
@@ -171,8 +186,7 @@ class UserService(
                 phone = signUpRequest.phone,
                 password = passwordEncoder.encode(signUpRequest.password),
                 provider = null,
-                providerId = null,
-                image = null
+                providerId = null
         )
 
         // 사용자 저장
@@ -183,6 +197,7 @@ class UserService(
     }
 
     // 이메일 찾기
+// 이메일 찾기
     fun findEmail(request: FindEmailRequest): FindEmailResponse {
         // 실명과 폰 번호로 사용자를 찾습니다.
         val user = userRepository.findByNameAndPhone(request.name, request.phone)

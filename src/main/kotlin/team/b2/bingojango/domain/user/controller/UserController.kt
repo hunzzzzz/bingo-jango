@@ -6,28 +6,23 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
-import team.b2.bingojango.domain.user.dto.response.UploadImageResponse
 import team.b2.bingojango.domain.user.dto.request.*
 import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
-import team.b2.bingojango.global.aws.S3Service
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController
 @RequestMapping("/api/v1/users")
 class UserController(
-    private val userService: UserService,
-    private val s3Service: S3Service
+    private val userService: UserService
 ) {
     @Operation(summary = "로그인")
     @PreAuthorize("isAnonymous()")
@@ -55,16 +50,17 @@ class UserController(
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
     fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
-        // UserService 내부에서 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
         try {
+            // SignUpRequest의 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
+            signUpRequest.validatePassword()
             userService.signUp(signUpRequest)
-        } catch (e: IllegalArgumentException) {
-            // 비밀번호 유효성 검사에 실패한 경우 에러 응답 반환
-            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다.")
-        }
 
-        // 회원가입 성공 시 성공 응답 반환
-        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 성공적으로 완료되었습니다.")
+            // 회원가입 성공 시 성공 응답 반환
+            return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 성공적으로 완료되었습니다.")
+        } catch (e: IllegalArgumentException) {
+            // 유효성 검사 실패 시 에러 응답 반환
+            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다. ${e.message}")
+        }
     }
 
     @Operation(summary = "본인 프로필 조회")
@@ -146,14 +142,6 @@ class UserController(
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("탈퇴가 정상적으로 완료되었습니다.")
-    }
-    @Operation(summary = "이미지 업로드")
-    @PostMapping("/{userId}/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun uploadImage(
-            @RequestParam("image") multipartFile: MultipartFile,
-            @PathVariable userId: Long): ResponseEntity<UploadImageResponse> {
-        return ResponseEntity
-                .ok(UploadImageResponse(url=s3Service.upload(multipartFile)))
     }
 
 }

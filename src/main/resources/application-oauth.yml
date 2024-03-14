@@ -12,7 +12,3 @@ oauth2:
     client_id: ${OAUTH2_NAVER_CLIENT_ID}
     client_secret: ${OAUTH2_NAVER_CLIENT_SECRET}
     redirect_url: "http://localhost:8080/oauth2/callback/naver"
-  google:
-    client_id: ${OAUTH2_GOOGLE_CLIENT_ID}
-    client_secret: ${OAUTH2_GOOGLE_CLIENT_SECRET}
-    redirect_url: "http://localhost:8080/oauth2/callback/google"

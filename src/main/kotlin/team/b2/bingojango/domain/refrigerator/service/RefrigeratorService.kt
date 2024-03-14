@@ -14,11 +14,11 @@ import team.b2.bingojango.domain.refrigerator.dto.request.JoinByInvitationCodeRe
 import team.b2.bingojango.domain.refrigerator.dto.request.JoinByPasswordRequest
 import team.b2.bingojango.domain.refrigerator.dto.response.RefrigeratorResponse
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
-import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
+import java.time.ZonedDateTime
 
 @Service
 class RefrigeratorService(
@@ -32,8 +32,7 @@ class RefrigeratorService(
     fun getRefrigerator(userPrincipal: UserPrincipal): List<RefrigeratorResponse> {
         val member = memberRepository.findAllByUserId(userPrincipal.id)
         val refrigerator = member.map { it.refrigerator }
-        val filtered = refrigerator.filter { it.status == RefrigeratorStatus.NORMAL }
-        return filtered.map { it.toResponse() }
+        return refrigerator.map { it.toResponse()}
     }
 
     //신규 냉장고 생성
@@ -42,7 +41,7 @@ class RefrigeratorService(
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
         val chatRoom = chatRoomService.buildChatRoom(refrigerator, userPrincipal)
-        val member = memberRepository.save(Member.toEntity(user, MemberRole.STAFF, refrigerator, chatRoom))
+        val member = memberRepository.save(Member.toEntity(user, MemberRole.STAFF,refrigerator, chatRoom))
         return refrigerator.toResponse()
     }
 
@@ -75,13 +74,12 @@ class RefrigeratorService(
         return refrigerator.toResponse()
     }
 
-    //냉장고 참여 멤버 조회
     @Transactional
     fun getMembers(refrigeratorId: Long): List<MemberResponse> {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
                 ?: throw ModelNotFoundException("Refrigerator")
         val members = memberRepository.findAllByRefrigerator(refrigerator)
-        return members.sortedWith(compareBy<Member> { it.role }.thenBy { it.createdAt }).map { member ->
+        return members.sortedWith(compareBy<Member>{it.role}.thenBy{it.createdAt}).map { member ->
             MemberResponse(
                     name = member.user.nickname,
                     role = member.role,
