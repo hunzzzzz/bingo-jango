@@ -171,7 +171,8 @@ class UserService(
                 phone = signUpRequest.phone,
                 password = passwordEncoder.encode(signUpRequest.password),
                 provider = null,
-                providerId = null
+                providerId = null,
+                image = null
         )
 
         // 사용자 저장
