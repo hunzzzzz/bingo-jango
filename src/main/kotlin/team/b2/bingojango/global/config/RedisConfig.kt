@@ -20,7 +20,7 @@ import team.b2.bingojango.domain.chatting.dto.ChatResponse
 @Configuration
 class RedisConfig(
 ) {
-    @Value("\${spring.data.redis.host")
+    @Value("\${spring.data.redis.host}")
     private lateinit var redisHost: String
 
     @Value("\${spring.data.redis.port}")

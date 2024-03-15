@@ -24,6 +24,7 @@ class MemberService(
         if (existMember.role != MemberRole.STAFF) {throw InvalidRoleException()}
 
         val userRefrigerator = findRefrigeratorByUserId(userPrincipal.id)
+        if (userRefrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         if (refrigeratorId != userRefrigerator.id) {throw InvalidCredentialException()}
 
         val member = memberRepository.findByIdOrNull(memberId) ?: throw ModelNotFoundException("memberId")
@@ -42,6 +43,7 @@ class MemberService(
     @Transactional
     fun withdrawMember(refrigeratorId: Long, userPrincipal: UserPrincipal) {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         val user = userRepository.findByIdOrNull(userPrincipal.id)?: throw ModelNotFoundException("User")
         val member = memberRepository.findByUserAndRefrigerator(user, refrigerator) ?: throw ModelNotFoundException("Member")
 
