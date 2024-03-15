@@ -15,6 +15,7 @@ import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.domain.food.repository.FoodRepository
 import team.b2.bingojango.domain.purchase.service.PurchaseService
+import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.global.exception.cases.*
 import team.b2.bingojango.global.util.EntityFinder
@@ -33,6 +34,8 @@ class FoodService(
     private val entityFinder: EntityFinder
 ) {
     fun getFood(refrigeratorId: Long): List<FoodResponse> {
+        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         return foodRepository.findAll().map {
             FoodResponse(
                     category = it.category.name,
@@ -46,10 +49,8 @@ class FoodService(
 
     @Transactional
     fun addFood(refrigeratorId: Long, request: AddFoodRequest) {
-        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
-                ?: throw ModelNotFoundException("냉장고를 찾을 수 없습니다.")
-        //해당 냉장고에 동일 음식이 있을 경우
-        //테스트 시 오류나면 refrigeratorId가 아니라 findRefrigerator 로 변경해보기
+        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (findRefrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         val existsFood = foodRepository.existsByRefrigeratorIdAndName(refrigeratorId, request.name)
         if (existsFood) {
             throw AlreadyExistsFoodException()
@@ -66,11 +67,11 @@ class FoodService(
 
     @Transactional
     fun updateFood(refrigeratorId: Long, foodId: Long, request: UpdateFoodRequest) {
-        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
-                ?: throw ModelNotFoundException("냉장고를 찾을 수 없습니다.")
-        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("음식을 찾을 수 없습니다.")
+        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (findRefrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
+        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("Food")
         if (findFood.refrigerator?.id != findRefrigerator.id) {
-            throw ModelNotFoundException("냉장고에 음식이 존재하지 않습니다.")
+            throw ModelNotFoundException("Food")
         }
         //기존 음식 이름과 변경한 음식 이름이 같으면 pass(변경 값 저장)
         //이름이 다를때, 변경한 음식의 이름이 이미 존재하면 이미 존재하는 음식이라고 알려주기
@@ -88,11 +89,11 @@ class FoodService(
 
     @Transactional
     fun updateFoodCount(refrigeratorId: Long, foodId: Long, count: Int) {
-        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
-                ?: throw ModelNotFoundException("냉장고를 찾을 수 없습니다.")
-        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("음식을 찾을 수 없습니다.")
+        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (findRefrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
+        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("Food")
         if (findFood.refrigerator?.id != findRefrigerator.id) {
-            throw ModelNotFoundException("냉장고에 음식이 존재하지 않습니다.")
+            throw ModelNotFoundException("Food")
         }
         findFood.count = count
         foodRepository.save(findFood)
@@ -100,11 +101,11 @@ class FoodService(
 
     @Transactional
     fun deleteFood(refrigeratorId: Long, foodId: Long) {
-        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
-                ?: throw ModelNotFoundException("냉장고를 찾을 수 없습니다.")
-        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("음식을 찾을 수 없습니다.")
+        val findRefrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (findRefrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
+        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("Food")
         if (findFood.refrigerator?.id != findRefrigerator.id) {
-            throw ModelNotFoundException("냉장고에 음식이 존재하지 않습니다.")
+            throw ModelNotFoundException("Food")
         }
         foodRepository.delete(findFood)
     }
