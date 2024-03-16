@@ -7,6 +7,7 @@ import team.b2.bingojango.domain.mail.dto.MailResponse
 import team.b2.bingojango.domain.mail.model.Mail
 import team.b2.bingojango.domain.mail.repository.MailRepository
 import team.b2.bingojango.domain.mail.utility.MailUtility
+import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 
@@ -19,6 +20,7 @@ class MailService(
 ) {
     fun sendInvitationCode(refrigeratorId: Long, email: String): MailResponse {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         val code = mailUtility.sendMail(email)
         val mail = mailRepository.save(Mail.toEntity(refrigerator, email, code))
 

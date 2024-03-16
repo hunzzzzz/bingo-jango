@@ -80,6 +80,7 @@ class RefrigeratorService(
     fun getMembers(refrigeratorId: Long): List<MemberResponse> {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
                 ?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         val members = memberRepository.findAllByRefrigerator(refrigerator)
         return members.sortedWith(compareBy<Member> { it.role }.thenBy { it.createdAt }).map { member ->
             MemberResponse(
