@@ -16,7 +16,6 @@ import team.b2.bingojango.domain.refrigerator.dto.response.RefrigeratorResponse
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
-import team.b2.bingojango.domain.user.model.QUser.user
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.DuplicateValueException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
