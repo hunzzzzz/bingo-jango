@@ -7,6 +7,12 @@ spring:
   profiles:
     include: [mail, oauth]
 
+  # REDIS
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+
 # JWT
 auth:
   jwt:
