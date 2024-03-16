@@ -13,6 +13,18 @@ class GlobalExceptionHandler(
         private val httpServletRequest: HttpServletRequest
 ) {
 
+    @ExceptionHandler(DuplicateValueException::class)
+    fun handleDuplicateValueException(e: DuplicateValueException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(
+                ErrorResponse(
+                    httpStatus = "409 Conflict",
+                    message = e.message.toString(),
+                    path = httpServletRequest.requestURI
+                )
+            )
+    }
+
     // 특정 엔터티 조회 실패
     @ExceptionHandler(ModelNotFoundException::class)
     fun handleModelNotFoundException(e: ModelNotFoundException)
@@ -108,6 +120,8 @@ class GlobalExceptionHandler(
     @ExceptionHandler(MustAssignException::class)
     fun handleMustAssignException(e: MustAssignException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
+
+
 
 
     private fun getErrorResponse(httpStatus: HttpStatus, e: Exception) = when (httpStatus) {
