@@ -81,7 +81,7 @@ class FoodController(
         sort: SortFood?,
         category: FoodCategory?,
         count: Int?,
-        keyword: String
+        keyword: String?
     ): ResponseEntity<Page<FoodResponse>> {
         return ResponseEntity
             .status(HttpStatus.OK)

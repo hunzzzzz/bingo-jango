@@ -27,6 +27,7 @@ class FoodRepositoryImpl: QueryDslSupport(), CustomFoodRepository {
         val whereClause = BooleanBuilder()
         val pageable: PageRequest = PageRequest.of(page, 10, Sort.by(sort.toString()))
 
+        refrigeratorId.let { whereClause.and(food.refrigerator.id.eq(refrigeratorId)) }
         category?.let { whereClause.and(food.category.eq(category)) } //카테고리와 동일한 음식
         count?.let { whereClause.and(food.count.loe(count))} //count 이하 갯수의 음식
         keyword?.let { whereClause.and(food.name.contains(keyword)) } //검색어를 포함한 음식
