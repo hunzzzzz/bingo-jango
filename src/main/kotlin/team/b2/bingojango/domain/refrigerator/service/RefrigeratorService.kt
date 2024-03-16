@@ -17,6 +17,7 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
+import team.b2.bingojango.global.exception.cases.DuplicateValueException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
 
@@ -39,6 +40,7 @@ class RefrigeratorService(
     //신규 냉장고 생성
     @Transactional
     fun addRefrigerator(userPrincipal: UserPrincipal, request: AddRefrigeratorRequest): RefrigeratorResponse {
+        if (refrigeratorRepository.existsRefrigeratorByName(request.name)) throw DuplicateValueException("중복된 냉장고 이름 입니다.")
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
         val chatRoom = chatRoomService.buildChatRoom(refrigerator, userPrincipal)
