@@ -53,6 +53,8 @@ dependencies {
     implementation("com.slack.api:slack-api-client:${slackVersion}")
     // SWAGGER
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${swaggerVersion}")
+    // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     // TEST
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
