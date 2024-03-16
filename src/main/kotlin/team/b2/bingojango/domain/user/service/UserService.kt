@@ -67,7 +67,7 @@ class UserService(
 
     // 회원가입 성공 및 실패
     fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
-        try {
+//        try {
             // 비밀번호 유효성 검사
             validatePassword(signUpRequest.password, signUpRequest.passwordConfirm)
 
@@ -113,22 +113,22 @@ class UserService(
                 success = success,
                 message = message
             )
-        } catch (e: IllegalArgumentException) {
-            val success = false
-            val message = e.message ?: "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
-
-            return SignUpResponse(
-                name = signUpRequest.name,
-                nickname = signUpRequest.nickname,
-                email = signUpRequest.email,
-                phone = signUpRequest.phone,
-                createdAt = LocalDateTime.now(),
-                updatedAt = LocalDateTime.now(),
-                id = 0,
-                success = success,
-                message = message
-            )
-        }
+//        } catch (e: IllegalArgumentException) {
+//            val success = false
+//            val message = e.message ?: "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
+//
+//            return SignUpResponse(
+//                name = signUpRequest.name,
+//                nickname = signUpRequest.nickname,
+//                email = signUpRequest.email,
+//                phone = signUpRequest.phone,
+//                createdAt = LocalDateTime.now(),
+//                updatedAt = LocalDateTime.now(),
+//                id = 0,
+//                success = success,
+//                message = message
+//            )
+//        }
     }
 
     // 비밀번호 유효성 검사 메서드 추가
@@ -171,7 +171,8 @@ class UserService(
                 phone = signUpRequest.phone,
                 password = passwordEncoder.encode(signUpRequest.password),
                 provider = null,
-                providerId = null
+                providerId = null,
+                image = null
         )
 
         // 사용자 저장

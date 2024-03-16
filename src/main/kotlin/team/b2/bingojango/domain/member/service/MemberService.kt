@@ -9,10 +9,7 @@ import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
-import team.b2.bingojango.global.exception.cases.AlreadyHaveStaffAccessException
-import team.b2.bingojango.global.exception.cases.InvalidCredentialException
-import team.b2.bingojango.global.exception.cases.InvalidRoleException
-import team.b2.bingojango.global.exception.cases.ModelNotFoundException
+import team.b2.bingojango.global.exception.cases.*
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
@@ -27,6 +24,7 @@ class MemberService(
         if (existMember.role != MemberRole.STAFF) {throw InvalidRoleException()}
 
         val userRefrigerator = findRefrigeratorByUserId(userPrincipal.id)
+        if (userRefrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         if (refrigeratorId != userRefrigerator.id) {throw InvalidCredentialException()}
 
         val member = memberRepository.findByIdOrNull(memberId) ?: throw ModelNotFoundException("memberId")
@@ -45,6 +43,7 @@ class MemberService(
     @Transactional
     fun withdrawMember(refrigeratorId: Long, userPrincipal: UserPrincipal) {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         val user = userRepository.findByIdOrNull(userPrincipal.id)?: throw ModelNotFoundException("User")
         val member = memberRepository.findByUserAndRefrigerator(user, refrigerator) ?: throw ModelNotFoundException("Member")
 
@@ -55,10 +54,10 @@ class MemberService(
         else {
             val findMember = memberRepository.findAllByRefrigerator(member.refrigerator)
             val countMember = findMember.size
-            val staffMember = findMember.find { it.role == MemberRole.STAFF }
+            val staffMemberList = findMember.filter{ it.role == MemberRole.STAFF }
 
-            if (countMember > 1 && staffMember != null) {memberRepository.delete(member)}
-            if (countMember > 1 && staffMember == null) {throw Exception("STAFF 권한을 위임해야 탈퇴가 가능합니다.")}
+            if (countMember > 1 && staffMemberList.size > 1) {memberRepository.delete(member)}
+            if (countMember > 1 && staffMemberList.size == 1) {throw MustAssignException()}
             if (countMember == 1) {refrigerator.status = RefrigeratorStatus.DELETED}
         }
     }
