@@ -119,6 +119,8 @@ class FoodService(
         count: Int?,
         keyword: String?
     ): Page<FoodResponse> {
+        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         return foodRepository.findByFood(refrigeratorId, page, sort, category, count, keyword).map { it.toResponse() }
     }
 }

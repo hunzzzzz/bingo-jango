@@ -41,6 +41,7 @@ class RefrigeratorService(
     @Transactional
     fun addRefrigerator(userPrincipal: UserPrincipal, request: AddRefrigeratorRequest): RefrigeratorResponse {
         if (refrigeratorRepository.existsRefrigeratorByName(request.name)) throw DuplicateValueException("중복된 냉장고 이름 입니다.")
+        if (request.password != request.rePassword) throw IllegalArgumentException("비밀번호와 비밀번호확인이 일치하지 않습니다.")
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
         val chatRoom = chatRoomService.buildChatRoom(refrigerator, userPrincipal)
