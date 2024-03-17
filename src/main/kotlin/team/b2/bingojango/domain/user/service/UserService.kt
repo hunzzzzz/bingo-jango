@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.mail.service.MailService
 import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.user.dto.request.*
@@ -14,6 +15,7 @@ import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.model.UserStatus
 import team.b2.bingojango.domain.user.repository.UserRepository
+import team.b2.bingojango.global.aws.S3Service
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.exception.cases.UserNotFoundException
@@ -33,7 +35,8 @@ class UserService(
     private val mailService: MailService,
     private val tokenGenerator: TokenGenerator,
     private val tokenUtil: TokenUtil,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val s3Service: S3Service
 ) {
     //로그인
     fun login(request: LoginRequest,
@@ -347,6 +350,15 @@ class UserService(
                 userRepository.delete(user)
             }
         }
+    }
+
+    @Transactional
+    fun uploadImage(multipartFile: MultipartFile, userPrincipal: UserPrincipal): UploadImageResponse {
+        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        val url = s3Service.upload(multipartFile)
+        user.image = url
+        userRepository.save(user)
+        return UploadImageResponse(url)
     }
 
     private fun getUserInfo(userPrincipal: UserPrincipal) = userRepository.findByIdOrNull(userPrincipal.id)
