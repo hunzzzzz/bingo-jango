@@ -11,6 +11,7 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST}
+      password: ${REDIS_PASSWORD}
       port: 6379
 
 # JWT
