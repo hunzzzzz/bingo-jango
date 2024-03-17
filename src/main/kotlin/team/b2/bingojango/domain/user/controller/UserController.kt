@@ -147,13 +147,15 @@ class UserController(
             .status(HttpStatus.OK)
             .body("탈퇴가 정상적으로 완료되었습니다.")
     }
-    @Operation(summary = "이미지 업로드")
-    @PostMapping("/{userId}/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Operation(summary = "프로필 이미지 업로드")
+    @PostMapping("/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun uploadImage(
             @RequestParam("image") multipartFile: MultipartFile,
-            @PathVariable userId: Long): ResponseEntity<UploadImageResponse> {
+            @AuthenticationPrincipal userPrincipal: UserPrincipal)
+    : ResponseEntity<UploadImageResponse>{
         return ResponseEntity
-                .ok(UploadImageResponse(url=s3Service.upload(multipartFile)))
+                .status(HttpStatus.OK)
+                .body(userService.uploadImage(multipartFile, userPrincipal))
     }
 
 }
