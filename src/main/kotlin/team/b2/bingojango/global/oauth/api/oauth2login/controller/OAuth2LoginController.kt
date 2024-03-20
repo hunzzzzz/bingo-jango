@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.global.oauth.api.oauth2login.service.OAuth2LoginService
 import team.b2.bingojango.global.oauth.client.oauth2.OAuth2ClientService
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
@@ -31,7 +32,7 @@ class OAuth2LoginController(
     fun callback(
         @PathVariable provider: OAuth2Provider, response: HttpServletResponse,
         @RequestParam(name = "code") authorizationCode: String
-    ): String {
+    ): LoginResponse {
         return oAuth2LoginService.login(provider, response, authorizationCode)
     }
 }
