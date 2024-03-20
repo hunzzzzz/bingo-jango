@@ -7,5 +7,7 @@ import team.b2.bingojango.domain.food.model.Food
 @Repository
 interface FoodRepository : JpaRepository<Food, Long>, CustomFoodRepository {
     fun existsByRefrigeratorIdAndName(refrigeratorId: Long, name: String): Boolean
+
+    fun findByRefrigeratorId(refrigeratorId: Long): List<Food>
 }
 

@@ -69,6 +69,7 @@ class RefrigeratorController(
     }
 
     @Operation(summary = "냉장고 참여 멤버 조회")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{refrigeratorId}")
     fun getMembers(
             @PathVariable refrigeratorId: Long

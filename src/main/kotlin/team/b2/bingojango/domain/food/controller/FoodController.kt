@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import team.b2.bingojango.domain.food.service.FoodService
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
+import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "food", description = "음식")
 @RestController
@@ -23,52 +26,61 @@ class FoodController(
     @Operation(summary = "음식 조회")
     @GetMapping
     fun getFood(
-            @PathVariable refrigeratorId: Long
+            @PathVariable refrigeratorId: Long,
+            @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<List<FoodResponse>>{
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(foodService.getFood(refrigeratorId))
+                .body(foodService.getFood(userPrincipal, refrigeratorId))
     }
 
     @Operation(summary = "음식 추가")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     fun addFood(
         @PathVariable refrigeratorId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody addFoodRequest: AddFoodRequest
     ): ResponseEntity<Unit> {
-        foodService.addFood(refrigeratorId, addFoodRequest)
+        foodService.addFood(userPrincipal, refrigeratorId, addFoodRequest)
         return ResponseEntity(HttpStatus.CREATED)
     }
 
     @Operation(summary = "음식 수정")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{foodId}")
     fun updateFood(
         @PathVariable refrigeratorId: Long,
         @PathVariable foodId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody updateFoodRequest: UpdateFoodRequest
     ): ResponseEntity<Unit> {
-        foodService.updateFood(refrigeratorId, foodId, updateFoodRequest)
+        foodService.updateFood(userPrincipal, refrigeratorId, foodId, updateFoodRequest)
         return ResponseEntity(HttpStatus.OK)
     }
 
     @Operation(summary = "음식 수량 수정")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{foodId}")
     fun updateFoodCount(
         @PathVariable refrigeratorId: Long,
         @PathVariable foodId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestParam count: Int
     ): ResponseEntity<Unit> {
-        foodService.updateFoodCount(refrigeratorId, foodId, count)
+        foodService.updateFoodCount(userPrincipal, refrigeratorId, foodId, count)
         return ResponseEntity(HttpStatus.OK)
     }
 
     @Operation(summary = "음식 삭제")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{foodId}")
     fun deleteFood(
         @PathVariable refrigeratorId: Long,
-        @PathVariable foodId: Long
+        @PathVariable foodId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<Unit> {
-        foodService.deleteFood(refrigeratorId, foodId)
+        foodService.deleteFood(userPrincipal, refrigeratorId, foodId)
         return ResponseEntity.noContent().build()
     }
 
