@@ -11,6 +11,7 @@ import team.b2.bingojango.domain.user.model.User
 @Repository
 interface MemberRepository : JpaRepository<Member, Long> {
     fun countByRole(role: MemberRole): Long
+
     fun findByUserAndRefrigerator(user: User, refrigerator: Refrigerator): Member?
 
     fun findAllByRefrigerator(refrigerator: Refrigerator): List<Member>
@@ -20,4 +21,6 @@ interface MemberRepository : JpaRepository<Member, Long> {
     fun findByUserAndChatRoom(user: User, chatRoom: ChatRoom): Member?
 
     fun findByUserId (userId: Long): Member?
+
+    fun existsByUserAndRefrigerator(user: User, refrigerator: Refrigerator): Boolean
 }
