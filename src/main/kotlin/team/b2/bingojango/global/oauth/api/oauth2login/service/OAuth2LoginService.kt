@@ -2,6 +2,7 @@ package team.b2.bingojango.global.oauth.api.oauth2login.service
 
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Service
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.global.oauth.client.oauth2.OAuth2ClientService
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
 import team.b2.bingojango.global.security.jwt.JwtPlugin
@@ -20,7 +21,7 @@ class OAuth2LoginService(
     // 2. 액세스 토큰 (카카오 출입증)으로 사용자정보 조회
     // 3. 사용자정보로 SocialMember 있으면 조회 없으면 회원가입
     // 4. SocialMember 를 토대로 우리쪽 액세스 토큰(빙고 출입증) 발급후 응답
-    fun login(provider: OAuth2Provider, response: HttpServletResponse, authorizationCode: String): String {
+    fun login(provider: OAuth2Provider, response: HttpServletResponse, authorizationCode: String): LoginResponse {
         val userInfo = oAuth2ClientService.login(provider, authorizationCode)
         val user = socialMemberService.registerIfAbsent(userInfo)
 
@@ -32,7 +33,7 @@ class OAuth2LoginService(
 
         //AccessToken 생성 후 반환
         val accessToken = jwtPlugin.generateAccessToken(user.id.toString(), user.email, user.role.name)
-        return accessToken
+        return LoginResponse(accessToken)
 
     }
 }
