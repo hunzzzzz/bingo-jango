@@ -138,10 +138,10 @@ class UserController(
     @PutMapping("mypage/withdraw")
     fun withdrawUser(
         @Parameter(description = "password 만 입력")
-        @RequestBody passwordRequest: PasswordRequest,
+        @RequestBody withdrawRequest: WithdrawRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<String>{
-        userService.withdrawUser(passwordRequest, userPrincipal)
+        userService.withdrawUser(withdrawRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("탈퇴가 정상적으로 완료되었습니다.")

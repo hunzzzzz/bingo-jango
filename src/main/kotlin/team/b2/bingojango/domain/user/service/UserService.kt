@@ -328,8 +328,8 @@ class UserService(
     }
 
     // 유저 탈퇴
-    @Transactional
-    fun withdrawUser(request: PasswordRequest, userPrincipal: UserPrincipal) {
+    @Transactional // request 재활용 하지 말고 하나 만들기 (기억)
+    fun withdrawUser(request: WithdrawRequest, userPrincipal: UserPrincipal) {
         val user = getUserInfo(userPrincipal)
         if (!passwordEncoder.matches(user.password, request.password)) throw IllegalArgumentException("비밀번호가 일치하지 않아요.")
 
