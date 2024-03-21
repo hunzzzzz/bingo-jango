@@ -27,13 +27,15 @@ val kotestExtensionVersion = "1.1.3"
 val mockkVersion = "1.13.8"
 val queryDslVersion = "5.0.0"
 val slackVersion = "1.38.1"
+val stompVersion = "2.3.3-1"
 val swaggerVersion = "2.3.0"
+val webSocketVersion = "1.1.2"
 
 dependencies {
     // ACTUATOR
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     // AWS
-    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:${awsVersion}")
     // MAIL
     implementation("org.springframework.boot:spring-boot-starter-mail")
     // DB
@@ -67,8 +69,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // WEBSOCKET
     implementation("org.springframework.boot:spring-boot-starter-websocket")
-    implementation("org.webjars:sockjs-client:1.1.2")
-    implementation("org.webjars:stomp-websocket:2.3.3-1")
+    implementation("org.webjars:sockjs-client:${webSocketVersion}")
+    implementation("org.webjars:stomp-websocket:${stompVersion}")
     // WEB
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

@@ -1,0 +1,12 @@
+spring:
+  # Settings
+  config:
+    activate:
+      on-profile: aws
+
+# AWS S3
+accessKey: ${AWS_S3_ACCESS_KEY}
+secretKey: ${AWS_S3_SECRET_KEY}
+bucket: ${AWS_S3_BUCKET}
+dir: ${AWS_S3_DIR}
+region: ${AWS_S3_REGION}

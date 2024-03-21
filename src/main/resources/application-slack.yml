@@ -1,0 +1,10 @@
+spring:
+  # Settings
+  config:
+    activate:
+      on-profile: slack
+
+# SLACK
+slack:
+  bot-token: ${SLACK_BOT_TOKEN}
+  channel: ${SLACK_CHANNEL}
