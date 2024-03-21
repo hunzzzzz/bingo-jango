@@ -18,7 +18,7 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "food", description = "음식")
 @RestController
-@RequestMapping("/api/v1/refrigerator/{refrigeratorId}/foods")
+@RequestMapping("/refrigerator/{refrigeratorId}/foods")
 class FoodController(
     private val foodService: FoodService
 ) {
