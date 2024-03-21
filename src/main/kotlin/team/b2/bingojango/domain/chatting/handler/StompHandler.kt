@@ -66,7 +66,6 @@ class StompHandler(
 //                }.onFailure {
 //                    throw AccessDeniedException("invalid token")
 //                }.getOrThrow()
-
 //        }
         return message
     }

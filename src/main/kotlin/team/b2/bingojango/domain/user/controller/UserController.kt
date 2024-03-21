@@ -19,7 +19,6 @@ import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
-import team.b2.bingojango.global.aws.S3Service
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "user", description = "유저")
@@ -40,6 +39,7 @@ class UserController(
     }
 
     @Operation(summary = "로그아웃")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     fun logout(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
@@ -80,7 +80,7 @@ class UserController(
 
     @Operation(summary = "타인 프로필 조회")
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     fun getUser(
             @PathVariable userId: Long,
             @AuthenticationPrincipal userPrincipal: UserPrincipal
@@ -140,10 +140,10 @@ class UserController(
     @PutMapping("mypage/withdraw")
     fun withdrawUser(
         @Parameter(description = "password 만 입력")
-        @RequestBody passwordRequest: PasswordRequest,
+        @RequestBody withdrawRequest: WithdrawRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<String>{
-        userService.withdrawUser(passwordRequest, userPrincipal)
+        userService.withdrawUser(withdrawRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("탈퇴가 정상적으로 완료되었습니다.")

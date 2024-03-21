@@ -54,7 +54,14 @@ class ChatService(
                 member = member,
             )
         )
-        val response = save.toResponse()
+        val response = ChatResponse(
+            chatRoomId = save.chatRoom.id!!,
+            nickname = save.member.user.nickname,
+            content = save.content,
+            status = save.status,
+            createdAt = save.createdAt,
+            isMyChat = save.member.user.id == user.id
+        )
         messageTemplate.convertAndSend("/sub/chatroom/${response.chatRoomId}", response)
 
         return response
@@ -100,6 +107,7 @@ class ChatService(
                     nickname = it.member.user.nickname,
                     status = it.status,
                     createdAt = it.createdAt,
+                    isMyChat = it.member.user.id==user.id
                 )
             }
         }

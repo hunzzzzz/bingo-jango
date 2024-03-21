@@ -9,4 +9,5 @@ data class ChatResponse(
     val content: String,
     val status: ChatStatus,
     val createdAt: ZonedDateTime,
+    val isMyChat: Boolean=false,
 )

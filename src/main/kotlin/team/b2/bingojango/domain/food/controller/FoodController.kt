@@ -86,8 +86,10 @@ class FoodController(
     }
 
     @Operation(summary = "음식 검색 및 정렬")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/search")
     fun searchFood(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable refrigeratorId: Long,
         @RequestParam
         (defaultValue = "0") page: Int,
@@ -98,6 +100,6 @@ class FoodController(
     ): ResponseEntity<Page<FoodResponse>> {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(foodService.searchFood(refrigeratorId, page, sort, category, count, keyword))
+            .body(foodService.searchFood(userPrincipal, refrigeratorId, page, sort, category, count, keyword))
     }
 }

@@ -19,6 +19,11 @@ class JwtAuthenticationFilter(
         private val BEARER_PATTERN = Regex("^Bearer (.+?)$")
     }
 
+    //[API] JWT 인증 필터
+    //1. 토큰 추출 : 헤더에서 "Bearer"토큰을 추출함.
+    //2. 토큰 유효성 검사 : 토큰에서 사용자의 정보를 추출함.
+    //3. 인증 정보 설정 : UserPrincipal 객체를 통해 Spring Security 에 인증 정보를 저장
+    //4. 다음 요청이나 필터로 전달함.
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,

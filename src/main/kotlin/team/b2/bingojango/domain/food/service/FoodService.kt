@@ -8,6 +8,7 @@ import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
+import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.domain.food.repository.FoodRepository
@@ -15,7 +16,9 @@ import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
-import team.b2.bingojango.global.exception.cases.*
+import team.b2.bingojango.global.exception.cases.AlreadyExistsFoodException
+import team.b2.bingojango.global.exception.cases.InvalidCredentialException
+import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
 import team.b2.bingojango.global.util.ZonedDateTimeConverter
 
@@ -121,6 +124,7 @@ class FoodService(
 
     // 음식 검색 및 정렬
     fun searchFood(
+        userPrincipal: UserPrincipal,
         refrigeratorId: Long,
         page: Int,
         sort: SortFood?,
@@ -130,6 +134,8 @@ class FoodService(
     ): Page<FoodResponse> {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
         if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
+        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
         return foodRepository.findByFood(refrigeratorId, page, sort, category, count, keyword).map { it.toResponse() }
     }
 }
