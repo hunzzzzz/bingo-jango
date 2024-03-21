@@ -1,4 +1,4 @@
-package team.b2.bingojango.domain.mail.utility
+package team.b2.bingojango.global.util
 
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
@@ -7,7 +7,7 @@ import java.util.*
 
 @Component
 class MailUtility(
-    val javaMailSender: JavaMailSender
+    private val javaMailSender: JavaMailSender
 ) {
     //인증번호 생성
     fun createCode() : String {
@@ -33,7 +33,6 @@ class MailUtility(
     }
 
     fun sendMailFindingPassword(to: String, subject: String, body: String): String {
-        println("asdfasdfasdfasfdas")
         val message = javaMailSender.createMimeMessage()
         val helper = MimeMessageHelper(message)
 
