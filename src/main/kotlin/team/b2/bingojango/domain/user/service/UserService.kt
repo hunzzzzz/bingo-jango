@@ -2,6 +2,7 @@ package team.b2.bingojango.domain.user.service
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -22,7 +23,6 @@ import team.b2.bingojango.global.exception.cases.UserNotFoundException
 import team.b2.bingojango.global.security.TokenGenerator
 import team.b2.bingojango.global.security.jwt.JwtPlugin
 import team.b2.bingojango.global.security.util.CookieUtil
-import team.b2.bingojango.global.security.util.TokenUtil
 import team.b2.bingojango.global.security.util.UserPrincipal
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -34,38 +34,37 @@ class UserService(
     private val jwtPlugin: JwtPlugin,
     private val mailService: MailService,
     private val tokenGenerator: TokenGenerator,
-    private val tokenUtil: TokenUtil,
     private val memberRepository: MemberRepository,
-    private val s3Service: S3Service
+    private val s3Service: S3Service,
+    @Value("\${app.cookie.expiry}") private val cookieExpirationTime: Int,
 ) {
-    //로그인
-    fun login(request: LoginRequest,
-              response: HttpServletResponse
+    //[API] 로그인
+    //1 : 이메일 일치 여부 확인
+    //2 : 비밀번호 일치 여부 확인
+    //3 : RefreshToken 생성 후 쿠키와 DB에 저장
+    //4 : AccessToken 생성 후 반환
+    fun login(
+        request: LoginRequest,
+        response: HttpServletResponse
     ): LoginResponse {
-        //이메일, 비밀번호 확인
         val user = userRepository.findByEmail(request.email) ?: throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
         if (!passwordEncoder.matches(request.password, user.password)) throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
-
-        //RefreshToken 생성 후 쿠키 반환, DB 저장
         val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
-        val cookieExpirationHour = 24 * 60 * 60 // 쿠키유효시간(24시간, 초 단위)
-        CookieUtil.addCookie(response,"refreshToken",refreshToken, cookieExpirationHour) //RefreshToken 쿠키 반환
-        tokenUtil.storeToken(user, refreshToken) //RefreshToken DB 저장
-
-        //AccessToken 생성 후 반환
         val accessToken = jwtPlugin.generateAccessToken(user.id.toString(), user.email, user.role.name)
+        CookieUtil.addCookie(response,"refreshToken",refreshToken, cookieExpirationTime)
+        jwtPlugin.storeToken(user, refreshToken)
         return LoginResponse(accessToken)
     }
 
-    //로그아웃
+    //[API] 로그아웃 - RefreshToken 무효화
     @Transactional
     fun logout(
         userPrincipal: UserPrincipal,
         request: HttpServletRequest,
         response: HttpServletResponse
     ){
-        tokenUtil.deleteToken(userPrincipal) //RefreshToken DB 삭제
-        CookieUtil.deleteCookie(request,response,"refreshToken") //RefreshToken 쿠키 삭제
+        jwtPlugin.deleteToken(userPrincipal)
+        CookieUtil.deleteCookie(request,response,"refreshToken")
     }
 
     // 회원가입 성공 및 실패

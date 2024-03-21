@@ -19,15 +19,13 @@ import team.b2.bingojango.domain.user.dto.response.LoginResponse
 import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
-import team.b2.bingojango.global.aws.S3Service
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 class UserController(
     private val userService: UserService,
-    private val s3Service: S3Service
 ) {
     @Operation(summary = "로그인")
     @PreAuthorize("isAnonymous()")
@@ -41,6 +39,7 @@ class UserController(
     }
 
     @Operation(summary = "로그아웃")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     fun logout(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
@@ -79,7 +78,7 @@ class UserController(
     }
 
     @Operation(summary = "타인 프로필 조회")
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     fun getUser(
             @PathVariable userId: Long,
             @AuthenticationPrincipal userPrincipal: UserPrincipal

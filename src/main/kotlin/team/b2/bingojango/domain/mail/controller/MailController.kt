@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -17,7 +18,8 @@ class MailController(
     private val mailService: MailService
 ) {
     @Operation(summary = "냉장고 초대코드 발송하기")
-    @PostMapping("/api/v1/refrigerator/{refrigeratorId}/member")
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/refrigerator/{refrigeratorId}/member")
     fun sendInvitationCode(
         @PathVariable refrigeratorId: Long,
         @RequestParam email : String

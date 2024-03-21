@@ -1,12 +1,11 @@
 package team.b2.bingojango.domain.mail.service
 
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
 import team.b2.bingojango.domain.mail.dto.MailResponse
 import team.b2.bingojango.domain.mail.model.Mail
 import team.b2.bingojango.domain.mail.repository.MailRepository
-import team.b2.bingojango.domain.mail.utility.MailUtility
+import team.b2.bingojango.global.util.MailUtility
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
@@ -16,7 +15,6 @@ class MailService(
     private val mailRepository: MailRepository,
     private val mailUtility: MailUtility,
     private val refrigeratorRepository: RefrigeratorRepository,
-    private val mailSender: JavaMailSender
 ) {
     fun sendInvitationCode(refrigeratorId: Long, email: String): MailResponse {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
