@@ -30,6 +30,10 @@ class RefrigeratorService(
         private val mailRepository: MailRepository,
 ) {
     //[API] 냉장고 목록 조회
+    //1. 로그인한 유저 정보로 멤버 조회
+    //2. 해당 멤버의 냉장고 조회
+    //3. 삭제된 냉장고는 제외하기
+    //4. 냉장고 목록 반환
     fun getRefrigerator(userPrincipal: UserPrincipal): List<RefrigeratorResponse> {
         val member = memberRepository.findAllByUserId(userPrincipal.id)
         val refrigerator = member.map { it.refrigerator }
