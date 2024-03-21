@@ -4,13 +4,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import team.b2.bingojango.domain.food.model.Food
-import team.b2.bingojango.domain.product.repository.ProductRepository
-import team.b2.bingojango.domain.purchase.repository.PurchaseRepository
-import team.b2.bingojango.domain.purchase_product.repository.PurchaseProductRepository
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
+import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.domain.food.repository.FoodRepository
@@ -18,7 +15,9 @@ import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
 import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
-import team.b2.bingojango.global.exception.cases.*
+import team.b2.bingojango.global.exception.cases.AlreadyExistsFoodException
+import team.b2.bingojango.global.exception.cases.InvalidCredentialException
+import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
 import team.b2.bingojango.global.util.ZonedDateTimeConverter
 
