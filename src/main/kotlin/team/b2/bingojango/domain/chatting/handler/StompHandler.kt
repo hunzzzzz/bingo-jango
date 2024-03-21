@@ -31,7 +31,7 @@ class StompHandler(
                         val principal = UserPrincipal(
                             id = userId,
                             email = email,
-                            roles = setOf(role)
+                            roles = setOf(role)g
                         )
                         val authentication = JwtAuthenticationToken(
                             principal = principal,
@@ -66,7 +66,6 @@ class StompHandler(
 //                }.onFailure {
 //                    throw AccessDeniedException("invalid token")
 //                }.getOrThrow()
-
 //        }
         return message
     }
