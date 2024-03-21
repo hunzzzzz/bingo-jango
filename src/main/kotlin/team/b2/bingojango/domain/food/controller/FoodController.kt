@@ -85,6 +85,7 @@ class FoodController(
     }
 
     @Operation(summary = "음식 검색 및 정렬")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/search")
     fun searchFood(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
