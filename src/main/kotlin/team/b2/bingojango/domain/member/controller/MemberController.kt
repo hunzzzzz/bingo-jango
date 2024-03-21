@@ -10,7 +10,7 @@ import team.b2.bingojango.domain.member.service.MemberService
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @RestController
-@RequestMapping("/api/v1/refrigerator/{refrigeratorId}/members")
+@RequestMapping("refrigerator/{refrigeratorId}/members")
 class MemberController(
         private val memberService: MemberService
 ) {

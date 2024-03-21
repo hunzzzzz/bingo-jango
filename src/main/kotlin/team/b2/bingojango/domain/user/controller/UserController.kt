@@ -24,10 +24,9 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 class UserController(
-    private val userService: UserService,
-    private val s3Service: S3Service
+    private val userService: UserService
 ) {
     @Operation(summary = "로그인")
     @PreAuthorize("isAnonymous()")
@@ -68,6 +67,7 @@ class UserController(
     }
 
     @Operation(summary = "본인 프로필 조회")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     fun getMyProfile(
             @AuthenticationPrincipal userPrincipal: UserPrincipal
@@ -79,6 +79,7 @@ class UserController(
     }
 
     @Operation(summary = "타인 프로필 조회")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/users/{userId}")
     fun getUser(
             @PathVariable userId: Long,
@@ -148,6 +149,7 @@ class UserController(
             .body("탈퇴가 정상적으로 완료되었습니다.")
     }
     @Operation(summary = "프로필 이미지 업로드")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun uploadImage(
             @RequestParam("image") multipartFile: MultipartFile,

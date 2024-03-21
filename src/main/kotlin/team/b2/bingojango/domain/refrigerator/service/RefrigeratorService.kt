@@ -78,7 +78,8 @@ class RefrigeratorService(
         return refrigerator.toResponse()
     }
 
-    //냉장고 참여 멤버 조회
+    // [API] 냉장고 참여 멤버 조회
+    // 참여 멤버 조회는 굳이 냉장고 소속이 아니어도 가능하지 않을까요..? (보류)
     @Transactional
     fun getMembers(refrigeratorId: Long): List<MemberResponse> {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
