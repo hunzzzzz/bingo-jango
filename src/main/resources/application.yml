@@ -21,3 +21,8 @@ auth:
     secret: ${JWT_SECRET}
     accessTokenExpirationHour: ${JWT_ACCESS_TOKEN_EXPIRATION_HOUR}
     refreshTokenExpirationHour: ${JWT_REFRESH_TOKEN_EXPIRATION_HOUR}
+
+# Cookie
+app:
+  cookie:
+    expiry: ${COOKIE_EXPIRATION_TIME}
