@@ -31,7 +31,7 @@ class StompHandler(
                         val principal = UserPrincipal(
                             id = userId,
                             email = email,
-                            roles = setOf(role)g
+                            roles = setOf(role)
                         )
                         val authentication = JwtAuthenticationToken(
                             principal = principal,
