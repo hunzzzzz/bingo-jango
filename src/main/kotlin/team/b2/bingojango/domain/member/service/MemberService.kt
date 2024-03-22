@@ -18,6 +18,13 @@ class MemberService(
         private val refrigeratorRepository: RefrigeratorRepository,
         private val userRepository: UserRepository
 ) {
+    /*
+    [API] 스태프 권한 위임
+    검증 조건 1 : 본인 ROlE 이 STAFF 일 때만 권한을 위임할 수 있다
+    검증 조건 2 : ROLE 이 MEMBER 인 다른 멤버가 존재해야 위임할 수 있다
+    검증 조건 3 : 본인이 소속된 냉장고만 STAFF 권한을 위임할 수 있다
+    검증 조건 4 : 본인 냉장고에 소속된 MEMBER 에게만 권한을 위임할 수 있다
+     */
     @Transactional
     fun assignStaff(refrigeratorId: Long, memberId: Long, userPrincipal: UserPrincipal) {
         val existMember = memberRepository.findByUserId(userPrincipal.id) ?: throw ModelNotFoundException("User's member")
@@ -34,12 +41,20 @@ class MemberService(
         memberRepository.save(member)
     }
 
+    // [내부 메소드] 유저 아이디로 냉장고 찾기
     private fun findRefrigeratorByUserId(userId: Long): Refrigerator {
         val member = memberRepository.findByUserId(userId)
                 ?: throw ModelNotFoundException("Member")
         return member.refrigerator
     }
 
+    /*
+    [API] 멤버 탈퇴
+    검증 조건 1 : MEMBER -> 자동탈퇴
+    검증 조건 2 : STAFF -> 다른 STAFF 있으면 -> 자동탈퇴
+    검증 조건 3 : STAFF -> 다른 MEMBER 있으면 -> 권한 위임 하라고 예외문구
+    검증 조건 4 : STAFF -> 혼자 있을때 -> 냉장고 삭제
+    */
     @Transactional
     fun withdrawMember(refrigeratorId: Long, userPrincipal: UserPrincipal) {
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)?: throw ModelNotFoundException("Refrigerator")

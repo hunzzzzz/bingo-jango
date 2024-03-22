@@ -24,6 +24,7 @@ class FoodController(
 ) {
 
     @Operation(summary = "음식 조회")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     fun getFood(
             @PathVariable refrigeratorId: Long,

@@ -4,10 +4,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
-import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.domain.food.repository.FoodRepository
@@ -30,14 +30,12 @@ class FoodService(
     private val memberRepository: MemberRepository,
     private val userRepository: UserRepository,
 ) {
+    /*
+    [API] 음식 조회
+    검증조건 : 본인이 속한 냉장고 이면서 / 속한 냉장고에 들어있는 음식일 경우 조회 가능
+    */
     fun getFood(userPrincipal: UserPrincipal, refrigeratorId: Long): List<FoodResponse> {
-        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
-        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
-
-        // 로그인한 사람이 냉장고에 소속되어 있는지 확인
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
-        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
-
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
         return foodRepository.findByRefrigeratorId(refrigeratorId)
                 .map {
             FoodResponse(
@@ -49,78 +47,81 @@ class FoodService(
         }
     }
 
+    /*
+    [API] 음식 추가
+    검증 조건 1 : 본인이 속한 냉장고에만 음식 추가 가능
+    검증 조건 2 : 같은 음식 이름이 존재할 경우 추가 불가능
+     */
     @Transactional
     fun addFood(userPrincipal: UserPrincipal, refrigeratorId: Long, request: AddFoodRequest) {
-        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
-        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
-        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
         val existsFood = foodRepository.existsByRefrigeratorIdAndName(refrigeratorId, request.name)
-        if (existsFood) {
-            throw AlreadyExistsFoodException()
-        }
+        if (existsFood) {throw AlreadyExistsFoodException()}
         val newFood = Food(
                 category = request.category,
                 name = request.name,
                 expirationDate = ZonedDateTimeConverter.convertStringDateFromZonedDateTime(request.expirationDate),
                 count = request.count,
-                refrigerator = refrigerator
+                refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
         )
         foodRepository.save(newFood)
     }
 
+    /*
+    [API] 음식 수정
+    검증 조건 1 : 본인이 속한 냉장고에만 음식 수정 가능
+    검증 조건 2-1 : 기존 음식 이름과 변경할 음식 이름이 같으면, 변경 값 저장
+    검증 조건 2-2 : 기존 음식 이름과 변경할 음식 이름이 다르고, 해당 냉장고에 동일 음식 이름 없으면 변경 값 저장
+    검증 조건 2-3 : 기존 음식 이름과 변경할 음식 이름이 다르고, 해당 냉장고에 동일 음식 이름 있으면 저장 불가능
+    */
     @Transactional
     fun updateFood(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, request: UpdateFoodRequest) {
-        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
-        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
-        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
-        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("Food")
-        if (findFood.refrigerator?.id != refrigerator.id) {
-            throw ModelNotFoundException("Food")
-        }
-        //기존 음식 이름과 변경한 음식 이름이 같으면 pass(변경 값 저장)
-        //이름이 다를때, 변경한 음식의 이름이 이미 존재하면 이미 존재하는 음식이라고 알려주기
-        if (findFood.name != request.name) {
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
+        val food = findFood(refrigeratorId, foodId)
+        if (food.name != request.name) {
             val existsFoodName = foodRepository.existsByRefrigeratorIdAndName(refrigeratorId, request.name)
-            if (existsFoodName) {
-                throw AlreadyExistsFoodException()
-            }
+            if (existsFoodName) {throw AlreadyExistsFoodException()}
         }
-        findFood.category = FoodCategory.valueOf(request.category)
-        findFood.name = request.name
-        findFood.expirationDate = ZonedDateTimeConverter.convertStringDateFromZonedDateTime(request.expirationDate)
-        foodRepository.save(findFood)
+        food.category = FoodCategory.valueOf(request.category)
+        food.name = request.name
+        food.expirationDate = ZonedDateTimeConverter.convertStringDateFromZonedDateTime(request.expirationDate)
+        foodRepository.save(food)
     }
 
+    // [API] 음식 수량 수정
+    // 검증 조건 : 본인이 속한 냉장고에만 수량 수정 가능
     @Transactional
     fun updateFoodCount(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) {
-        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
-        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
-        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
-        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("Food")
-        if (findFood.refrigerator?.id != refrigerator.id) {
-            throw ModelNotFoundException("Food")
-        }
-        findFood.count = count
-        foodRepository.save(findFood)
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
+        val food = findFood(refrigeratorId, foodId)
+        food.count = count
+        foodRepository.save(food)
     }
 
+    // [API] 음식 삭제
+    // 검증 조건 : 본인이 속한 냉장고에만 음식 삭제 가능
     @Transactional
     fun deleteFood(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long) {
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
+        val food = findFood(refrigeratorId, foodId)
+        foodRepository.delete(food)
+    }
+
+    // [내부 메서드] 존재하는 냉장고인지 확인 (soft delete 된 냉장고 제외)
+    // 로그인한 유저가 가지고 있는 냉장고 맞는지 검증
+    private fun validateAccessToRefrigerator(userPrincipal: UserPrincipal, refrigeratorId: Long){
         val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
         if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
-        val findFood = foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("Food")
-        if (findFood.refrigerator?.id != refrigerator.id) {
-            throw ModelNotFoundException("Food")
-        }
-        foodRepository.delete(findFood)
     }
 
-    //음식 검색 및 정렬
+    // [내부 메서드] 냉장고에 속한 음식 맞는지 확인
+    private fun findFood(refrigeratorId: Long, foodId: Long): Food {
+        return foodRepository.findByIdAndRefrigeratorId(foodId, refrigeratorId) ?: throw ModelNotFoundException("Food")
+    }
+
+    // 음식 검색 및 정렬
     fun searchFood(
         userPrincipal: UserPrincipal,
         refrigeratorId: Long,
@@ -130,10 +131,7 @@ class FoodService(
         count: Int?,
         keyword: String?
     ): Page<FoodResponse> {
-        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
-        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
-        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
         return foodRepository.findByFood(refrigeratorId, page, sort, category, count, keyword).map { it.toResponse() }
     }
 }

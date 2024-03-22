@@ -270,7 +270,7 @@ class UserService(
         mailService.sendEmail(user.email, subject, body)
     }
     
-    //로그인한 본인 프로필 보기
+    // [API] 로그인한 본인 프로필 보기
     @Transactional
     fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("Id")
@@ -284,14 +284,12 @@ class UserService(
         )
     }
 
-    //타인 프로필 보기
-    //본인 아이디랑 받아온 아이디 같으면 내 프로필보기로 넘기기
+    // [API] 타인 프로필 보기
+    // 로그인한 유저가 본인 userId 조회 시 내 프로필보기로 넘어가기 (더 상세 정보 조회됨)
     @Transactional
     fun getUser(userId: Long, userPrincipal: UserPrincipal): UserResponse {
         val user = userRepository.findByIdOrNull(userId) ?: throw ModelNotFoundException("userId")
-        if (userId == userPrincipal.id) {
-            return getMyProfile(userPrincipal) // MyProfileResponse도 UserResponse의 한 종류니까 오류가 발생하지 않음
-        }
+        if (userId == userPrincipal.id) {return getMyProfile(userPrincipal)}
         return UserResponse(
                 nickname = user.nickname,
                 email = user.email,
@@ -351,6 +349,7 @@ class UserService(
         }
     }
 
+    // [API] 프로필 이미지 업로드
     @Transactional
     fun uploadImage(multipartFile: MultipartFile, userPrincipal: UserPrincipal): UploadImageResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
