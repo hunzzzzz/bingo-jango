@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+
 plugins {
     id("org.springframework.boot") version "3.2.3"
     id("io.spring.dependency-management") version "1.1.4"
@@ -44,6 +45,8 @@ dependencies {
     // QueryDSL
     implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
     kapt("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
+    //Twilio
+    implementation("com.twilio.sdk:twilio:8.21.0")
     // SECURITY
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("io.jsonwebtoken:jjwt-api:${jjwtVersion}")

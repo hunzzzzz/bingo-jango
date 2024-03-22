@@ -22,4 +22,6 @@ interface UserRepository : JpaRepository<User, Long> {
     fun existsByProviderAndProviderId(kakao: OAuth2Provider, toString: String): Boolean
 
     fun findByProviderAndProviderId(kakao: OAuth2Provider, toString: String): User
+
+    fun findVerificationCodeByUserId(userId: Long): String?
 }

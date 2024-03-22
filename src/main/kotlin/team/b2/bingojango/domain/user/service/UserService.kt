@@ -1,8 +1,7 @@
 package team.b2.bingojango.domain.user.service
 
-import com.twilio.Twilio
-import com.twilio.rest.api.v2010.account.Message
-import com.twilio.type.PhoneNumber
+import MaskUtils.maskEmail
+import SmsService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +27,6 @@ import team.b2.bingojango.global.security.util.TokenUtil
 import team.b2.bingojango.global.security.util.UserPrincipal
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
-import kotlin.random.Random
 
 @Service
 class UserService @Autowired constructor(
@@ -39,7 +37,7 @@ class UserService @Autowired constructor(
     private val tokenGenerator: TokenGenerator,
     private val tokenUtil: TokenUtil,
     private val memberRepository: MemberRepository,
-    private val twilioSmsService: TwilioSmsService
+    private val smsService: SmsService
 ) {
     //로그인
     fun login(request: LoginRequest,
@@ -71,60 +69,24 @@ class UserService @Autowired constructor(
         CookieUtil.deleteCookie(request,response,"refreshToken") //RefreshToken 쿠키 삭제
     }
 
-    // 회원가입 성공 및 실패
-    fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
-        try {
-            // 필수 필드에 빈 문자열("")이 있는지 확인
-            if (signUpRequest.name.isBlank() || signUpRequest.email.isBlank() || signUpRequest.phone.isBlank() || signUpRequest.password.isBlank()) {
-                throw IllegalArgumentException("모든 필수 필드를 입력해주세요.")
-            }
-
-            // 이메일 형식 검사
-            if (!isValidEmail(signUpRequest.email)) {
-                throw IllegalArgumentException("올바른 이메일 형식이 아닙니다.")
-            }
-
-            // 전화번호 형식 검사
-            if (!isValidPhoneNumber(signUpRequest.phone)) {
-                throw IllegalArgumentException("올바른 전화번호 형식이 아닙니다.")
-            }
-
-            // 이메일 중복 검사
-            if (userRepository.existsByEmail(signUpRequest.email)) {
-                throw IllegalArgumentException("이미 등록된 이메일 주소입니다.")
-            }
-
-            // 닉네임 중복 검사
-            if (userRepository.existsByNickname(signUpRequest.nickname)) {
-                throw IllegalArgumentException("이미 사용 중인 닉네임입니다.")
-            }
-
-            // 회원가입 처리
-            val createdUserId = create(signUpRequest)
-
-            // Twilio를 사용하여 SMS 보내기
-            val verificationCode = generateVerificationCode()
-            val smsmessage = "Your verification code is: $verificationCode"
-            twilioSmsService.sendSms(signUpRequest.phone, smsmessage)
-
-            val success = true
-            val successmessage = "회원가입이 성공적으로 완료되었습니다."
-
+    fun signUp(signUpRequest: SignUpRequest?): SignUpResponse {
+        if (signUpRequest == null) {
             return SignUpResponse(
-                name = signUpRequest.name,
-                nickname = signUpRequest.nickname,
-                email = signUpRequest.email,
-                phone = signUpRequest.phone,
+                name = "",
+                nickname = "",
+                email = "",
+                phone = "",
                 createdAt = LocalDateTime.now(),
                 updatedAt = LocalDateTime.now(),
-                id = createdUserId,
-                success = success,
-                message = successmessage
+                id = 0,
+                success = false,
+                message = "회원가입 요청이 잘못되었습니다."
             )
-        } catch (e: IllegalArgumentException) {
-            val success = false
-            val message = e.message ?: "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
+        }
 
+        // 회원가입 요청의 유효성 검사
+        val validationResult = validateSignUpRequest(signUpRequest)
+        if (!validationResult.valid) {
             return SignUpResponse(
                 name = signUpRequest.name,
                 nickname = signUpRequest.nickname,
@@ -133,48 +95,66 @@ class UserService @Autowired constructor(
                 createdAt = LocalDateTime.now(),
                 updatedAt = LocalDateTime.now(),
                 id = 0,
-                success = success,
-                message = message
+                success = false,
+                message = validationResult.message
             )
         }
+
+        // 회원가입 처리
+        val createdUserId = create(signUpRequest)
+
+        // Twilio를 사용하여 SMS 보내기
+        val verificationCode = generateVerificationCode()
+        val smsMessage = "Your verification code is: $verificationCode"
+        smsService.sendSms(signUpRequest.phone, smsMessage)
+
+        return SignUpResponse(
+            name = signUpRequest.name,
+            nickname = signUpRequest.nickname,
+            email = signUpRequest.email,
+            phone = signUpRequest.phone,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now(),
+            id = createdUserId,
+            success = true,
+            message = "회원가입이 성공적으로 완료되었습니다."
+        )
+    }
+
+    // 회원가입 요청의 유효성 검사를 수행하는 함수
+    private fun validateSignUpRequest(signUpRequest: SignUpRequest): ValidationResult {
+        // 필수 필드에 빈 문자열("")이 있는지 확인
+        if (signUpRequest.name.isBlank() || signUpRequest.email.isBlank() || signUpRequest.phone.isBlank() || signUpRequest.password.isBlank()) {
+            return ValidationResult(false, "모든 필수 필드를 입력해주세요.")
+        }
+
+        // 이메일 형식 검사
+        if (!ValidationUtils.isValidEmail(signUpRequest.email)) {
+            return ValidationResult(false, "올바른 이메일 형식이 아닙니다.")
+        }
+
+        // 전화번호 형식 검사
+        if (!ValidationUtils.isValidPhoneNumber(signUpRequest.phone)) {
+            return ValidationResult(false, "올바른 전화번호 형식이 아닙니다.")
+        }
+
+        // 이메일 중복 검사
+        if (userRepository.existsByEmail(signUpRequest.email)) {
+            return ValidationResult(false, "이미 등록된 이메일 주소입니다.")
+        }
+
+        // 닉네임 중복 검사
+        if (userRepository.existsByNickname(signUpRequest.nickname)) {
+            return ValidationResult(false, "이미 사용 중인 닉네임입니다.")
+        }
+
+        return ValidationResult(true, "유효성 검사를 통과했습니다.")
     }
 
     // 사용자 인증 코드 생성
     private fun generateVerificationCode(): String {
-        val random = Random.Default
+        val random = kotlin.random.Random
         return (100000..999999).random(random).toString() // 6자리 무작위 숫자 생성
-    }
-
-    class TwilioSmsService(accountSid: String, authToken: String) {
-
-        init {
-            Twilio.init(accountSid, authToken)
-        }
-
-        fun sendSms(to: String, message: String) {
-            val from = PhoneNumber("YOUR_TWILIO_PHONE_NUMBER")
-            val toPhoneNumber = PhoneNumber(to)
-
-            val sms = Message.creator(
-                toPhoneNumber,
-                from,
-                message
-            ).create()
-
-            println("SMS sent with SID: ${sms.sid}")
-        }
-    }
-
-    // 이메일 형식 검사 함수
-    private fun isValidEmail(email: String): Boolean {
-        val emailPattern = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,6}\$")
-        return emailPattern.matches(email)
-    }
-
-    // 전화번호 형식 검사 함수
-    private fun isValidPhoneNumber(phone: String): Boolean {
-        val phonePattern = Regex("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}\$")
-        return phonePattern.matches(phone)
     }
 
     fun create(signUpRequest: SignUpRequest): Long {
@@ -196,7 +176,6 @@ class UserService @Autowired constructor(
         return savedUser.id ?: throw IllegalStateException("Failed to create user")
     }
 
-    // 이메일 찾기
 // 이메일 찾기
     fun findEmail(request: FindEmailRequest): FindEmailResponse {
         // 실명과 폰 번호로 사용자를 찾습니다.
@@ -210,35 +189,6 @@ class UserService @Autowired constructor(
         val maskedEmail = maskEmail(email)
 
         return FindEmailResponse(maskedEmail)
-    }
-
-    // 이메일 마스킹 함수
-    fun maskEmail(email: String): String {
-        val atIndex = email.indexOf('@')
-        if (atIndex == -1) {
-            // @ 문자가 없는 이메일 형식일 경우 그대로 반환
-            return email
-        }
-
-        val username = email.substring(0, atIndex)
-        val domain = email.substring(atIndex)
-        val maskedUsername = maskString(username, 5) // 아이디 부분을 5글자로 숨김 처리
-
-        return "$maskedUsername$domain"
-    }
-
-    // 문자열 마스킹 함수
-    fun maskString(str: String, visibleChars: Int): String {
-        val maskedLength = str.length - visibleChars
-        if (maskedLength <= 0) {
-            // 숨길 문자가 없는 경우 그대로 반환
-            return str
-        }
-
-        val maskedChars = "*".repeat(maskedLength)
-        val visibleCharsStr = str.substring(0, visibleChars)
-
-        return "$visibleCharsStr$maskedChars"
     }
 
     //비밀번호 찾기
@@ -261,28 +211,7 @@ class UserService @Autowired constructor(
         val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
         mailService.sendEmail(user.email, subject, body)
     }
-    
-    //비밀번호 재설정
-    fun resetPassword(request: PasswordResetRequest) {
-        // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
-        val user = userRepository.findByEmail(request.email)
-            ?: throw UserNotFoundException("User not found with email: ${request.email}")
 
-        // 임시 비밀번호 생성
-        val newPassword = tokenGenerator.generateToken()
-
-        // 비밀번호 업데이트
-        user.password = newPassword
-
-        // 사용자 정보 저장 (비밀번호 업데이트)
-        userRepository.save(user)
-
-        // 이메일로 임시 비밀번호 전송
-        val subject = "임시 비밀번호 발급 안내"
-        val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
-        mailService.sendEmail(user.email, subject, body)
-    }
-    
     //로그인한 본인 프로필 보기
     @Transactional
     fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
