@@ -8,7 +8,6 @@ import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.FoodResponse
 import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
-import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.domain.food.repository.FoodRepository
