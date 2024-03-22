@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.chatting.service.ChatRoomService
 import team.b2.bingojango.domain.mail.repository.MailRepository
-import team.b2.bingojango.domain.member.dto.MemberResponse
 import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.domain.member.model.MemberRole
 import team.b2.bingojango.domain.member.repository.MemberRepository
@@ -96,23 +95,5 @@ class RefrigeratorService(
         memberRepository.save(Member.toEntity(user, MemberRole.MEMBER, refrigerator, chatRoom))
 
         return refrigerator.toResponse()
-    }
-
-    // [API] 냉장고 참여 멤버 조회
-    // 참여 멤버 조회는 굳이 냉장고 소속이 아니어도 가능하지 않을까요..? (보류)
-    @Transactional
-    fun getMembers(refrigeratorId: Long): List<MemberResponse> {
-        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId)
-                ?: throw ModelNotFoundException("Refrigerator")
-        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
-        val members = memberRepository.findAllByRefrigerator(refrigerator)
-        return members.sortedWith(compareBy<Member> { it.role }.thenBy { it.createdAt }).map { member ->
-            MemberResponse(
-                    name = member.user.nickname,
-                    role = member.role,
-                    memberId = member.id!!,
-                    createdAt = member.createdAt
-            )
-        }
     }
 }
