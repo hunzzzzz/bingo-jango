@@ -109,14 +109,17 @@ class GlobalExceptionHandler(
                     )
             )
 
+    // 이미 동일한 음식 존재 (추가 불가)
     @ExceptionHandler(AlreadyExistsFoodException::class)
     fun handleAlreadyExistsFoodException(e: AlreadyExistsFoodException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
+    // 이미 STAFF 권한 있음 (권한 위임 불가)
     @ExceptionHandler(AlreadyHaveStaffAccessException::class)
     fun handleAlreadyHaveStaffAccessException(e: AlreadyHaveStaffAccessException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
+    // 권한 위임을 해야 함 (STAFF 인 본인 외 다른 STAFF 는 없고 다른 MEMBER 존재하면 위임 필수)
     @ExceptionHandler(MustAssignException::class)
     fun handleMustAssignException(e: MustAssignException) =
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))

@@ -3,6 +3,8 @@ package team.b2.bingojango.domain.member.service
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import team.b2.bingojango.domain.member.dto.MemberResponse
+import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.domain.member.model.MemberRole
 import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
@@ -18,6 +20,25 @@ class MemberService(
         private val refrigeratorRepository: RefrigeratorRepository,
         private val userRepository: UserRepository
 ) {
+    // [API] 냉장고 참여 멤버 조회
+    // 냉장고 소속일 경우에만 멤버 조회 가능
+    @Transactional
+    fun getMembers(userPrincipal: UserPrincipal, refrigeratorId: Long): List<MemberResponse>{
+        val refrigerator = refrigeratorRepository.findByIdOrNull(refrigeratorId) ?: throw ModelNotFoundException("Refrigerator")
+        if (refrigerator.status != RefrigeratorStatus.NORMAL) {throw ModelNotFoundException("Refrigerator")}
+        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        if (!memberRepository.existsByUserAndRefrigerator(user, refrigerator)) {throw InvalidCredentialException()}
+        val members = memberRepository.findAllByRefrigerator(refrigerator)
+        return members.sortedWith(compareBy<Member> {it.role}.thenBy {it.createdAt}).map{member ->
+            MemberResponse(
+                    name = member.user.nickname,
+                    role = member.role,
+                    memberId = member.id!!,
+                    createdAt = member.createdAt
+            )
+        }
+    }
+
     /*
     [API] 스태프 권한 위임
     검증 조건 1 : 본인 ROlE 이 STAFF 일 때만 권한을 위임할 수 있다
