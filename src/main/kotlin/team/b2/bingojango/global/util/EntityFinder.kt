@@ -34,6 +34,9 @@ class EntityFinder(
     fun getUserByEmail(email: String) =
         userRepository.findByEmail(email) ?: throw ModelNotFoundException("유저")
 
+    fun getUserByNameAndPhone(name: String, phone: String) =
+        userRepository.findByNameAndPhone(name, phone) ?: throw ModelNotFoundException("유저")
+
     fun getFood(foodId: Long) =
         foodRepository.findByIdOrNull(foodId) ?: throw ModelNotFoundException("식품")
 

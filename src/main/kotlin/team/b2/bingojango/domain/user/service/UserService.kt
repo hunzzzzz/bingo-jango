@@ -20,7 +20,6 @@ import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.aws.S3Service
 import team.b2.bingojango.global.exception.cases.InvalidCredentialException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
-import team.b2.bingojango.global.exception.cases.UserNotFoundException
 import team.b2.bingojango.global.security.TokenGenerator
 import team.b2.bingojango.global.security.jwt.JwtPlugin
 import team.b2.bingojango.global.security.util.CookieUtil
@@ -32,7 +31,6 @@ import java.time.ZonedDateTime
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val refrigeratorRepository: RefrigeratorRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtPlugin: JwtPlugin,
     private val mailService: MailService,
@@ -77,7 +75,6 @@ class UserService(
 
     // 회원가입 성공 및 실패
     fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
-//        try {
         // 비밀번호 유효성 검사
         validatePassword(signUpRequest.password, signUpRequest.passwordConfirm)
 
@@ -123,22 +120,6 @@ class UserService(
             success = success,
             message = message
         )
-//        } catch (e: IllegalArgumentException) {
-//            val success = false
-//            val message = e.message ?: "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
-//
-//            return SignUpResponse(
-//                name = signUpRequest.name,
-//                nickname = signUpRequest.nickname,
-//                email = signUpRequest.email,
-//                phone = signUpRequest.phone,
-//                createdAt = LocalDateTime.now(),
-//                updatedAt = LocalDateTime.now(),
-//                id = 0,
-//                success = success,
-//                message = message
-//            )
-//        }
     }
 
     // 비밀번호 유효성 검사 메서드 추가
@@ -195,14 +176,10 @@ class UserService(
     // 이메일 찾기
     fun findEmail(request: FindEmailRequest): FindEmailResponse {
         // 실명과 폰 번호로 사용자를 찾습니다.
-        val user = userRepository.findByNameAndPhone(request.name, request.phone)
-            ?: throw UserNotFoundException("사용자를 찾을 수 없습니다.")
+        val user = entityFinder.getUserByNameAndPhone(request.name, request.phone)
 
-        // 사용자의 이메일을 가져옵니다.
-        val email = user.email
-
-        // 이메일을 마스킹하여 반환합니다.
-        val maskedEmail = maskEmail(email)
+        // 사용자의 이메일을 가져와 마스킹하여 반환합니다.
+        val maskedEmail = maskEmail(user.email)
 
         return FindEmailResponse(maskedEmail)
     }
@@ -239,29 +216,7 @@ class UserService(
     //비밀번호 찾기
     fun findPassword(request: FindPasswordRequest) {
         // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
-        val user = userRepository.findByEmail(request.email)
-            ?: throw UserNotFoundException("User not found with email: ${request.email}")
-
-        // 임시 비밀번호 생성
-        val newPassword = tokenGenerator.generateToken()
-
-        // 비밀번호 업데이트
-        user.password = newPassword
-
-        // 사용자 정보 저장 (비밀번호 업데이트)
-        userRepository.save(user)
-
-        // 이메일로 임시 비밀번호 전송
-        val subject = "임시 비밀번호 발급 안내"
-        val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
-        mailService.sendEmail(user.email, subject, body)
-    }
-
-    //비밀번호 재설정
-    fun resetPassword(request: PasswordResetRequest) {
-        // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
-        val user = userRepository.findByEmail(request.email)
-            ?: throw UserNotFoundException("User not found with email: ${request.email}")
+        val user = userRepository.findByEmail(request.email) ?: throw ModelNotFoundException("유저")
 
         // 임시 비밀번호 생성
         val newPassword = tokenGenerator.generateToken()
@@ -298,8 +253,8 @@ class UserService(
 
     // 프로필 수정
     @Transactional
-    fun updateProfile(request: ProfileUpdateRequest, userPrincipal: UserPrincipal) {
-        val user = getUserInfo(userPrincipal)
+    fun updateProfile(userPrincipal: UserPrincipal, userId: Long, request: ProfileUpdateRequest) {
+        val user = entityFinder.getUser(userPrincipal.id)
         if (userRepository.existsByNickname(request.nickname)) throw IllegalArgumentException("존재하는 닉네임이에요.")
         if (userRepository.existsByEmail(request.email)) throw IllegalArgumentException("존재하는 이메일이에요.")
 
@@ -311,8 +266,8 @@ class UserService(
 
     // 유저 비밀번호 수정
     @Transactional
-    fun updateUserPassword(request: PasswordRequest, userPrincipal: UserPrincipal) {
-        val user = getUserInfo(userPrincipal)
+    fun updatePassword(userPrincipal: UserPrincipal, userId: Long, request: PasswordRequest) {
+        val user = entityFinder.getUser(userPrincipal.id)
         if (!passwordEncoder.matches(
                 user.password,
                 request.password
@@ -321,14 +276,12 @@ class UserService(
         if (request.newPassword != request.reNewPassword) throw IllegalArgumentException("새로운 비밀번호과 비밀번호 확인이 일치하지 않아요.")
 
         user.password = passwordEncoder.encode(request.newPassword)
-
-        userRepository.save(user)
     }
 
     // 유저 탈퇴
     @Transactional // request 재활용 하지 말고 하나 만들기 (기억)
     fun withdrawUser(request: WithdrawRequest, userPrincipal: UserPrincipal) {
-        val user = getUserInfo(userPrincipal)
+        val user = entityFinder.getUser(userPrincipal.id)
         if (!passwordEncoder.matches(user.password, request.password)) throw IllegalArgumentException("비밀번호가 일치하지 않아요.")
 
         user.status = UserStatus.WITHDRAWN
@@ -358,10 +311,6 @@ class UserService(
         userRepository.save(user)
         return UploadImageResponse(url)
     }
-
-    private fun getUserInfo(userPrincipal: UserPrincipal) = userRepository.findByIdOrNull(userPrincipal.id)
-        ?: throw ModelNotFoundException("id")
-
 
     // [내부 메서드] 로그인 정보를 확인
     private fun checkLoginInfo(email: String, password: String) {
