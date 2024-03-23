@@ -24,6 +24,7 @@ import team.b2.bingojango.global.security.TokenGenerator
 import team.b2.bingojango.global.security.jwt.JwtPlugin
 import team.b2.bingojango.global.security.util.CookieUtil
 import team.b2.bingojango.global.security.util.UserPrincipal
+import team.b2.bingojango.global.util.EntityFinder
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
@@ -36,6 +37,7 @@ class UserService(
     private val tokenGenerator: TokenGenerator,
     private val memberRepository: MemberRepository,
     private val s3Service: S3Service,
+    private val entityFinder: EntityFinder,
     @Value("\${app.cookie.expiry}") private val cookieExpirationTime: Int,
 ) {
     //[API] 로그인
@@ -46,15 +48,19 @@ class UserService(
     fun login(
         request: LoginRequest,
         response: HttpServletResponse
-    ): LoginResponse {
-        val user = userRepository.findByEmail(request.email) ?: throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
-        if (!passwordEncoder.matches(request.password, user.password)) throw InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
-        val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
-        val accessToken = jwtPlugin.generateAccessToken(user.id.toString(), user.email, user.role.name)
-        CookieUtil.addCookie(response,"refreshToken",refreshToken, cookieExpirationTime)
-        jwtPlugin.storeToken(user, refreshToken)
-        return LoginResponse(accessToken)
-    }
+    ) =
+        request.let {
+            checkLoginInfo(it.email, it.password)
+            entityFinder.getUserByEmail(it.email)
+        }.let {
+            val accessToken = jwtPlugin.generateAccessToken(it.id.toString(), it.email, it.role.name)
+            val refreshToken = jwtPlugin.generateRefreshToken(it.id.toString(), it.email, it.role.name)
+
+            jwtPlugin.storeToken(it, refreshToken)
+            CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieExpirationTime)
+
+            LoginResponse(accessToken)
+        }
 
     //[API] 로그아웃 - RefreshToken 무효화
     @Transactional
@@ -62,59 +68,59 @@ class UserService(
         userPrincipal: UserPrincipal,
         request: HttpServletRequest,
         response: HttpServletResponse
-    ){
+    ) {
         jwtPlugin.deleteToken(userPrincipal)
-        CookieUtil.deleteCookie(request,response,"refreshToken")
+        CookieUtil.deleteCookie(request, response, "refreshToken")
     }
 
     // 회원가입 성공 및 실패
     fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
 //        try {
-            // 비밀번호 유효성 검사
-            validatePassword(signUpRequest.password, signUpRequest.passwordConfirm)
+        // 비밀번호 유효성 검사
+        validatePassword(signUpRequest.password, signUpRequest.passwordConfirm)
 
-            // 필수 필드에 빈 문자열("")이 있는지 확인
-            if (signUpRequest.name.isBlank() || signUpRequest.email.isBlank() || signUpRequest.phone.isBlank() || signUpRequest.password.isBlank()) {
-                throw IllegalArgumentException("모든 필수 필드를 입력해주세요.")
-            }
+        // 필수 필드에 빈 문자열("")이 있는지 확인
+        if (signUpRequest.name.isBlank() || signUpRequest.email.isBlank() || signUpRequest.phone.isBlank() || signUpRequest.password.isBlank()) {
+            throw IllegalArgumentException("모든 필수 필드를 입력해주세요.")
+        }
 
-            // 이메일 형식 검사
-            if (!isValidEmail(signUpRequest.email)) {
-                throw IllegalArgumentException("올바른 이메일 형식이 아닙니다.")
-            }
+        // 이메일 형식 검사
+        if (!isValidEmail(signUpRequest.email)) {
+            throw IllegalArgumentException("올바른 이메일 형식이 아닙니다.")
+        }
 
-            // 전화번호 형식 검사
-            if (!isValidPhoneNumber(signUpRequest.phone)) {
-                throw IllegalArgumentException("올바른 전화번호 형식이 아닙니다.")
-            }
+        // 전화번호 형식 검사
+        if (!isValidPhoneNumber(signUpRequest.phone)) {
+            throw IllegalArgumentException("올바른 전화번호 형식이 아닙니다.")
+        }
 
-            // 이메일 중복 검사
-            if (userRepository.existsByEmail(signUpRequest.email)) {
-                throw IllegalArgumentException("이미 등록된 이메일 주소입니다.")
-            }
+        // 이메일 중복 검사
+        if (userRepository.existsByEmail(signUpRequest.email)) {
+            throw IllegalArgumentException("이미 등록된 이메일 주소입니다.")
+        }
 
-            // 닉네임 중복 검사
-            if (userRepository.existsByNickname(signUpRequest.nickname)) {
-                throw IllegalArgumentException("이미 사용 중인 닉네임입니다.")
-            }
+        // 닉네임 중복 검사
+        if (userRepository.existsByNickname(signUpRequest.nickname)) {
+            throw IllegalArgumentException("이미 사용 중인 닉네임입니다.")
+        }
 
-            // 회원가입 처리
-            val createdUserId = create(signUpRequest)
+        // 회원가입 처리
+        val createdUserId = create(signUpRequest)
 
-            val success = true
-            val message = "회원가입이 성공적으로 완료되었습니다."
+        val success = true
+        val message = "회원가입이 성공적으로 완료되었습니다."
 
-            return SignUpResponse(
-                name = signUpRequest.name,
-                nickname = signUpRequest.nickname,
-                email = signUpRequest.email,
-                phone = signUpRequest.phone,
-                createdAt = LocalDateTime.now(),
-                updatedAt = LocalDateTime.now(),
-                id = createdUserId,
-                success = success,
-                message = message
-            )
+        return SignUpResponse(
+            name = signUpRequest.name,
+            nickname = signUpRequest.nickname,
+            email = signUpRequest.email,
+            phone = signUpRequest.phone,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now(),
+            id = createdUserId,
+            success = success,
+            message = message
+        )
 //        } catch (e: IllegalArgumentException) {
 //            val success = false
 //            val message = e.message ?: "회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요."
@@ -167,14 +173,14 @@ class UserService(
     fun create(signUpRequest: SignUpRequest): Long {
         //회원가입 요청에서 받은 정보로 User 객체 생성
         val newUser = User(
-                name = signUpRequest.name,
-                nickname = signUpRequest.nickname,
-                email = signUpRequest.email,
-                phone = signUpRequest.phone,
-                password = passwordEncoder.encode(signUpRequest.password),
-                provider = null,
-                providerId = null,
-                image = null
+            name = signUpRequest.name,
+            nickname = signUpRequest.nickname,
+            email = signUpRequest.email,
+            phone = signUpRequest.phone,
+            password = passwordEncoder.encode(signUpRequest.password),
+            provider = null,
+            providerId = null,
+            image = null
         )
 
         // 사용자 저장
@@ -248,7 +254,7 @@ class UserService(
         val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
         mailService.sendEmail(user.email, subject, body)
     }
-    
+
     //비밀번호 재설정
     fun resetPassword(request: PasswordResetRequest) {
         // 여기에서 요청된 이메일을 가진 사용자를 데이터베이스에서 찾습니다.
@@ -269,18 +275,18 @@ class UserService(
         val body = "안녕하세요, ${user.email}님.\n\n새로운 임시 비밀번호는 다음과 같습니다: $newPassword\n\n로그인 후 비밀번호를 변경해주세요."
         mailService.sendEmail(user.email, subject, body)
     }
-    
+
     // [API] 로그인한 본인 프로필 보기
     @Transactional
     fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("Id")
-        return MyProfileResponse (
-                name = user.name,
-                nickname = user.nickname,
-                email = user.email,
-                phone = user.phone,
-                refrigerators = memberRepository.findAllByUserId(user.id!!).map { it.refrigerator.toResponse() },
-                createdAt = user.createdAt
+        return MyProfileResponse(
+            name = user.name,
+            nickname = user.nickname,
+            email = user.email,
+            phone = user.phone,
+            refrigerators = memberRepository.findAllByUserId(user.id!!).map { it.refrigerator.toResponse() },
+            createdAt = user.createdAt
         )
     }
 
@@ -289,12 +295,14 @@ class UserService(
     @Transactional
     fun getUser(userId: Long, userPrincipal: UserPrincipal): UserResponse {
         val user = userRepository.findByIdOrNull(userId) ?: throw ModelNotFoundException("userId")
-        if (userId == userPrincipal.id) {return getMyProfile(userPrincipal)}
+        if (userId == userPrincipal.id) {
+            return getMyProfile(userPrincipal)
+        }
         return UserResponse(
-                nickname = user.nickname,
-                email = user.email,
-                refrigerators = memberRepository.findAllByUserId(userId).map { it.refrigerator.toResponse() },
-                createdAt = user.createdAt
+            nickname = user.nickname,
+            email = user.email,
+            refrigerators = memberRepository.findAllByUserId(userId).map { it.refrigerator.toResponse() },
+            createdAt = user.createdAt
         )
     }
 
@@ -317,7 +325,11 @@ class UserService(
     @Transactional
     fun updateUserPassword(request: PasswordRequest, userPrincipal: UserPrincipal) {
         val user = getUserInfo(userPrincipal)
-        if (!passwordEncoder.matches(user.password, request.password)) throw IllegalArgumentException("기존의 비밀번호가 일치하지 않아요.")
+        if (!passwordEncoder.matches(
+                user.password,
+                request.password
+            )
+        ) throw IllegalArgumentException("기존의 비밀번호가 일치하지 않아요.")
         if (request.newPassword != request.reNewPassword) throw IllegalArgumentException("새로운 비밀번호과 비밀번호 확인이 일치하지 않아요.")
 
         user.password = passwordEncoder.encode(request.newPassword)
@@ -341,7 +353,7 @@ class UserService(
     fun deleteWithdrawnUser() {
         val daysOver = ZonedDateTime.now().minusDays(90)
         val users = userRepository.findAllByStatus(UserStatus.WITHDRAWN)
-                .filter { it.updatedAt.isAfter(daysOver) }
+            .filter { it.updatedAt.isAfter(daysOver) }
         if (users.isNotEmpty()) {
             for (user in users) {
                 userRepository.delete(user)
@@ -360,6 +372,15 @@ class UserService(
     }
 
     private fun getUserInfo(userPrincipal: UserPrincipal) = userRepository.findByIdOrNull(userPrincipal.id)
-            ?: throw ModelNotFoundException("id")
+        ?: throw ModelNotFoundException("id")
 
+
+    // [내부 메서드] 로그인 정보를 확인
+    private fun checkLoginInfo(email: String, password: String) {
+        InvalidCredentialException("이메일 또는 비밀번호를 확인해주세요.")
+            .let {
+                (userRepository.findByEmail(email) ?: throw it)
+                    .let { user -> if (!passwordEncoder.matches(password, user.password)) throw it }
+            }
+    }
 }
