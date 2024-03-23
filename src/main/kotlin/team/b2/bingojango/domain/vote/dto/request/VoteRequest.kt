@@ -6,7 +6,7 @@ import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.domain.purchase.model.Purchase
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
 import team.b2.bingojango.domain.vote.model.Vote
-import team.b2.bingojango.global.util.ZonedDateTimeConverter
+import team.b2.bingojango.global.util.ZonedDateTimeConverter.convertStringDateTimeFromZonedDateTime
 
 data class VoteRequest(
     val description: String?,
@@ -18,9 +18,9 @@ data class VoteRequest(
     )
     val dueDate: String,
 ) {
-    fun to(request: VoteRequest, refrigerator: Refrigerator, member: Member, purchase: Purchase) = Vote(
-        description = request.description,
-        dueDate = ZonedDateTimeConverter.convertStringDateTimeFromZonedDateTime(request.dueDate),
+    fun to(refrigerator: Refrigerator, member: Member, purchase: Purchase) = Vote(
+        description = description,
+        dueDate = convertStringDateTimeFromZonedDateTime(dueDate),
         refrigerator = refrigerator,
         voters = mutableSetOf(member),
         purchase = purchase

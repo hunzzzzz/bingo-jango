@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import team.b2.bingojango.domain.purchase.model.PurchaseSort
@@ -13,11 +14,12 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "purchase", description = "공동구매")
 @RestController
-@RequestMapping("/api/v1/refrigerator/{refrigeratorId}/purchase")
+@RequestMapping("/refrigerator/{refrigeratorId}/purchase")
 class PurchaseController(
     private val purchaseService: PurchaseService
 ) {
-    @Operation(summary = "특정 식품에 대한 공동구매 신청")
+    @Operation(summary = "특정 식품에 대한 같이구매 신청")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/foods/{foodId}")
     fun addFoodToPurchase(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
@@ -28,6 +30,7 @@ class PurchaseController(
         ResponseEntity.ok().body(purchaseService.addFoodToPurchase(userPrincipal, refrigeratorId, foodId, count))
 
     @Operation(summary = "공동구매 목록에 포함된 식품의 개수 수정")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/foods/{foodId}")
     fun updateFoodInPurchase(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
@@ -37,7 +40,8 @@ class PurchaseController(
     ) =
         ResponseEntity.ok().body(purchaseService.updateFoodInPurchase(userPrincipal, refrigeratorId, foodId, count))
 
-    @Operation(summary = "공동구매 목록에서 특정 식품 삭제")
+    @Operation(summary = "같이구매 목록에서 특정 식품 삭제")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/foods/{foodId}")
     fun deleteFoodFromPurchase(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
@@ -46,7 +50,8 @@ class PurchaseController(
     ) =
         ResponseEntity.ok().body(purchaseService.deleteFoodFromPurchase(userPrincipal, refrigeratorId, foodId))
 
-    @Operation(summary = "현재 진행 중인 공동구매를 출력")
+    @Operation(summary = "현재 진행 중인 같이구매를 출력")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     fun showPurchase(
         @PathVariable refrigeratorId: Long
@@ -54,6 +59,7 @@ class PurchaseController(
         purchaseService.showPurchase(refrigeratorId)
 
     @Operation(summary = "현재까지 진행된 모든 공동구매 목록을 출력")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/all")
     fun showPurchaseList(
         @PathVariable refrigeratorId: Long,
@@ -69,6 +75,7 @@ class PurchaseController(
     ) = purchaseService.showPurchaseList(refrigeratorId, status, sort, page)
 
     @Operation(summary = "완료/거절된 이전 공동구매를 선택 후 똑같은 내용의 공동구매 생성")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{purchaseId}")
     fun copyPurchase(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,

@@ -5,17 +5,19 @@ import team.b2.bingojango.domain.vote.model.Vote
 import team.b2.bingojango.global.util.ZonedDateTimeConverter
 
 data class VoteResponse(
-    val description: String,
-    val dueDate: String,
-    val memberName: String,
-    val voteStatus: String
+    val description: String?,  // 투표 설명
+    val dueDate: String,       // 투표 만료 기한
+    val memberName: String,    // 투표 기안자
+    val numberOfAgree: Long,   // 투표 찬성 인원 수
+    val numberOfStaff: Long    // 냉장고 내 STAFF 수
 ) {
     companion object {
         fun from(vote: Vote, member: Member, numberOfStaff: Long) = VoteResponse(
-            description = vote.description ?: "",
+            description = vote.description,
             dueDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(vote.dueDate),
             memberName = member.user.nickname,
-            voteStatus = "찬성 : ${vote.voters.size}명 / ${numberOfStaff}명"
+            numberOfAgree = vote.voters.size.toLong(),
+            numberOfStaff = numberOfStaff
         )
     }
 }
