@@ -58,6 +58,20 @@ class UserController(
             .body(userService.logout(userPrincipal, request, response))
     }
 
+    @Operation(summary = "이메일 찾기")
+    @PreAuthorize("isAnonymous()")
+    @PostMapping("/finding/email")
+    fun findEmail(@RequestBody @Valid request: FindEmailRequest): ResponseEntity<FindEmailResponse> {
+        return ResponseEntity.ok().body(userService.findEmail(request))
+    }
+
+    @Operation(summary = "비밀번호 찾기")
+    @PreAuthorize("isAnonymous()")
+    @PostMapping("/finding/password")
+    fun findPassword(@RequestBody request: FindPasswordRequest): ResponseEntity<Any> {
+        return ResponseEntity.ok().body(userService.findPassword(request))
+    }
+
     @Operation(summary = "프로필 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/users/{userId}")
@@ -74,41 +88,20 @@ class UserController(
         @PathVariable userId: Long,
         @RequestBody profileUpdateRequest: ProfileUpdateRequest
     ): ResponseEntity<String> {
-        userService.updateProfile(profileUpdateRequest, userPrincipal)
+        userService.updateProfile(userPrincipal, userId, profileUpdateRequest)
         return ResponseEntity.status(HttpStatus.OK).build()
     }
 
     @Operation(summary = "비밀번호 변경")
-    @PatchMapping("mypage/change-pwd")
-    fun updateUserPassword(
-        @RequestBody passwordRequest: PasswordRequest,
-        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/users/{userId}/change/password")
+    fun updatePassword(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable userId: Long,
+        @RequestBody passwordRequest: PasswordRequest
     ): ResponseEntity<String> {
-        userService.updateUserPassword(passwordRequest, userPrincipal)
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body("비밀번호가 변경되었습니다.")
-    }
-
-    @Operation(summary = "이메일 찾기")
-    @PostMapping("/find-email")
-    fun findEmail(@RequestBody request: FindEmailRequest): ResponseEntity<FindEmailResponse> {
-        val response = userService.findEmail(request)
-        return ResponseEntity.ok(response)
-    }
-
-    @Operation(summary = "비밀번호 찾기")
-    @PostMapping("/find-password")
-    fun findPassword(@RequestBody request: FindPasswordRequest): ResponseEntity<Any> {
-        userService.findPassword(request)
-        return ResponseEntity.ok().build()
-    }
-
-    @Operation(summary = "비밀번호 재설정")
-    @PostMapping("/reset-password")
-    fun resetPassword(@RequestBody request: PasswordResetRequest): ResponseEntity<Any> {
-        userService.resetPassword(request)
-        return ResponseEntity.ok().build()
+        userService.updatePassword(userPrincipal, userId, passwordRequest)
+        return ResponseEntity.status(HttpStatus.OK).build()
     }
 
     @Operation(summary = "회원 탈퇴 (SoftDelete, Scheduled)")

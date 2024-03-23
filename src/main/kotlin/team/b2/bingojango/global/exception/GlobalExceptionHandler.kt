@@ -125,8 +125,6 @@ class GlobalExceptionHandler(
             ResponseEntity.badRequest().body(getErrorResponse(HttpStatus.BAD_REQUEST, e))
 
 
-
-
     private fun getErrorResponse(httpStatus: HttpStatus, e: Exception) = when (httpStatus) {
         HttpStatus.BAD_REQUEST -> ErrorResponse(
                 httpStatus = "400 Bad Request",
