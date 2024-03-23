@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -48,7 +49,7 @@ class UserController(
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
     fun login(
-        @RequestBody loginRequest: LoginRequest,
+        @RequestBody @Valid loginRequest: LoginRequest,
         response: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
         return ResponseEntity
