@@ -55,20 +55,6 @@ class JwtPlugin(
             .compact()
     }
 
-    //Token Dto 생성
-    fun generateTokenDto(oAuth2User: OAuth2User): JwtDto {
-        val email = oAuth2User.attributes["email"] as String
-        val user = entityFinder.getUserByEmail(email)
-        val subject = user.id.toString()
-        val role = user.role.toString()
-        val refreshToken = generateRefreshToken(subject, email, role)
-        val accessToken = generateAccessToken(subject, email, role)
-        return JwtDto(
-            accessToken = accessToken,
-            refreshToken = refreshToken,
-        )
-    }
-
     //토큰 검증
     fun validateToken(jwt: String): Result<Jws<Claims>> {
         return kotlin.runCatching {
