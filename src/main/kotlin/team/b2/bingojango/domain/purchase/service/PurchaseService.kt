@@ -63,7 +63,7 @@ class PurchaseService(
                     refrigerator = entityFinder.getRefrigerator(refrigeratorId)
                 )
             )
-            "${entityFinder.getFood(foodId).name} ${count}개가 공동구매 신청되었습니다." // TODO: 추후 분리 예정
+            Unit
         }
 
     /*
@@ -124,26 +124,6 @@ class PurchaseService(
                 )
             }
 
-    // [내부 메서드] 현재 진행 중인(status 가 ACTIVE 한) Purchase 를 리턴 (없으면 예외 처리)
-    private fun getCurrentPurchase() =
-        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
-            ?: throw NoCurrentPurchaseException()
-
-    // [내부 메서드] 현재 진행 중인(status 가 ACTIVE 한) Purchase 를 리턴 (없으면 새로운 Purchase 객체 생성 후 리턴)
-    private fun getCurrentPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long) =
-        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
-            ?: makePurchase(userPrincipal, entityFinder.getRefrigerator(refrigeratorId))
-
-    // [내부 메서드] Purchase 객체 생성
-    private fun makePurchase(userPrincipal: UserPrincipal, refrigerator: Refrigerator) =
-        purchaseRepository.save(
-            Purchase(
-                status = PurchaseStatus.ACTIVE,
-                proposedBy = userPrincipal.id,
-                refrigerator = refrigerator
-            )
-        )
-
     // [API] 현재까지 진행된 모든 Purchase 목록을 출력
     fun showPurchaseList(refrigeratorId: Long, status: PurchaseStatus?, sort: PurchaseSort?, page: Int) =
         purchaseRepository.searchPurchase(
@@ -196,5 +176,25 @@ class PurchaseService(
     fun addProduct(food: Food, refrigerator: Refrigerator) =
         productRepository.save(
             Product(food = food, refrigerator = refrigerator)
+        )
+
+    // [내부 메서드] 현재 진행 중인(status 가 ACTIVE 한) Purchase 를 리턴 (없으면 예외 처리)
+    private fun getCurrentPurchase() =
+        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
+            ?: throw NoCurrentPurchaseException()
+
+    // [내부 메서드] 현재 진행 중인(status 가 ACTIVE 한) Purchase 를 리턴 (없으면 새로운 Purchase 객체 생성 후 리턴)
+    private fun getCurrentPurchase(userPrincipal: UserPrincipal, refrigeratorId: Long) =
+        purchaseRepository.findAll().firstOrNull { it.status == PurchaseStatus.ACTIVE }
+            ?: makePurchase(userPrincipal, entityFinder.getRefrigerator(refrigeratorId))
+
+    // [내부 메서드] Purchase 객체 생성
+    private fun makePurchase(userPrincipal: UserPrincipal, refrigerator: Refrigerator) =
+        purchaseRepository.save(
+            Purchase(
+                status = PurchaseStatus.ACTIVE,
+                proposedBy = userPrincipal.id,
+                refrigerator = refrigerator
+            )
         )
 }
