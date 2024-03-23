@@ -20,18 +20,36 @@ import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
 import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
+import java.net.URI
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping("/users")
+@RequestMapping
 class UserController(
     private val userService: UserService
 ) {
+    @Operation(summary = "회원가입")
+    @PreAuthorize("isAnonymous()")
+    @PostMapping("/signup")
+    fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
+        // UserService 내부에서 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
+        try {
+            userService.signUp(signUpRequest)
+        } catch (e: IllegalArgumentException) {
+            // 비밀번호 유효성 검사에 실패한 경우 에러 응답 반환
+            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다.")
+        }
+
+        // 회원가입 성공 시 성공 응답 반환
+        return ResponseEntity.created(URI.create("/login")).build()
+    }
+
     @Operation(summary = "로그인")
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
     fun login(
-        @RequestBody loginRequest: LoginRequest, response: HttpServletResponse
+        @RequestBody loginRequest: LoginRequest,
+        response: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -45,49 +63,34 @@ class UserController(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         request: HttpServletRequest,
         response: HttpServletResponse
-    ): ResponseEntity<Unit>{
+    ): ResponseEntity<Unit> {
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
             .body(userService.logout(userPrincipal, request, response))
-    }
-
-    @Operation(summary = "회원가입")
-    @PostMapping("/signup")
-    fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
-        // UserService 내부에서 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
-        try {
-            userService.signUp(signUpRequest)
-        } catch (e: IllegalArgumentException) {
-            // 비밀번호 유효성 검사에 실패한 경우 에러 응답 반환
-            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다.")
-        }
-
-        // 회원가입 성공 시 성공 응답 반환
-        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 성공적으로 완료되었습니다.")
     }
 
     @Operation(summary = "본인 프로필 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     fun getMyProfile(
-            @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<MyProfileResponse>{
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<MyProfileResponse> {
         //로그인한 본인 프로필 보기
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userService.getMyProfile(userPrincipal))
+            .status(HttpStatus.OK)
+            .body(userService.getMyProfile(userPrincipal))
     }
 
     @Operation(summary = "타인 프로필 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{userId}")
     fun getUser(
-            @PathVariable userId: Long,
-            @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<UserResponse>{
+        @PathVariable userId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<UserResponse> {
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userService.getUser(userId, userPrincipal))
+            .status(HttpStatus.OK)
+            .body(userService.getUser(userId, userPrincipal))
 
     }
 
@@ -96,7 +99,7 @@ class UserController(
     fun updateUserProfile(
         @RequestBody editRequest: EditRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<String>{
+    ): ResponseEntity<String> {
         userService.updateUserProfile(editRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -108,7 +111,7 @@ class UserController(
     fun updateUserPassword(
         @RequestBody passwordRequest: PasswordRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<String>{
+    ): ResponseEntity<String> {
         userService.updateUserPassword(passwordRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -142,22 +145,28 @@ class UserController(
         @Parameter(description = "password 만 입력")
         @RequestBody withdrawRequest: WithdrawRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<String>{
+    ): ResponseEntity<String> {
         userService.withdrawUser(withdrawRequest, userPrincipal)
         return ResponseEntity
             .status(HttpStatus.OK)
             .body("탈퇴가 정상적으로 완료되었습니다.")
     }
+
     @Operation(summary = "프로필 이미지 업로드")
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping(
+        "/images",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun uploadImage(
-            @RequestParam("image") multipartFile: MultipartFile,
-            @AuthenticationPrincipal userPrincipal: UserPrincipal)
-    : ResponseEntity<UploadImageResponse>{
+        @RequestParam("image") multipartFile: MultipartFile,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    )
+            : ResponseEntity<UploadImageResponse> {
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userService.uploadImage(multipartFile, userPrincipal))
+            .status(HttpStatus.OK)
+            .body(userService.uploadImage(multipartFile, userPrincipal))
     }
 
 }

@@ -6,14 +6,13 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import team.b2.bingojango.domain.user.model.User
-import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
+import team.b2.bingojango.global.util.EntityFinder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
@@ -26,8 +25,8 @@ class JwtPlugin(
     @Value("\${auth.jwt.secret}") private val secret: String,
     @Value("\${auth.jwt.accessTokenExpirationHour}") private val accessTokenExpirationHour: Long,
     @Value("\${auth.jwt.refreshTokenExpirationHour}") private val refreshTokenExpirationHour: Long,
-    private val userRepository: UserRepository,
     private val tokenRepository: TokenRepository,
+    private val entityFinder: EntityFinder
 ) {
     //AccessToken 생성
     fun generateAccessToken(subject: String, email: String, role: String): String {
@@ -59,7 +58,7 @@ class JwtPlugin(
     //Token Dto 생성
     fun generateTokenDto(oAuth2User: OAuth2User): JwtDto {
         val email = oAuth2User.attributes["email"] as String
-        val user = userRepository.findByEmail(email) ?: throw ModelNotFoundException("User")
+        val user = entityFinder.getUserByEmail(email)
         val subject = user.id.toString()
         val role = user.role.toString()
         val refreshToken = generateRefreshToken(subject, email, role)
@@ -71,7 +70,7 @@ class JwtPlugin(
     }
 
     //토큰 검증
-    fun validateToken(jwt: String): Result<Jws<Claims>>{
+    fun validateToken(jwt: String): Result<Jws<Claims>> {
         return kotlin.runCatching {
             val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
             Jwts.parser().verifyWith(key).build().parseSignedClaims(jwt)
@@ -87,7 +86,7 @@ class JwtPlugin(
     //토큰 삭제
     @Transactional
     fun deleteToken(userPrincipal: UserPrincipal) {
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException ("User")
+        val user = entityFinder.getUser(userPrincipal.id)
         val refreshToken = tokenRepository.findByUser(user) ?: throw ModelNotFoundException("RefreshToken")
         tokenRepository.delete(refreshToken)
     }
