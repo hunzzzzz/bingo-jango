@@ -13,12 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import team.b2.bingojango.domain.user.dto.response.UploadImageResponse
 import team.b2.bingojango.domain.user.dto.request.*
-import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
-import team.b2.bingojango.domain.user.dto.response.LoginResponse
-import team.b2.bingojango.domain.user.dto.response.MyProfileResponse
-import team.b2.bingojango.domain.user.dto.response.UserResponse
+import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
 import java.net.URI
@@ -33,15 +29,7 @@ class UserController(
     @PreAuthorize("isAnonymous()")
     @PostMapping("/signup")
     fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
-        // UserService 내부에서 validatePassword 메서드를 호출하여 비밀번호 유효성 검사 수행
-        try {
-            userService.signUp(signUpRequest)
-        } catch (e: IllegalArgumentException) {
-            // 비밀번호 유효성 검사에 실패한 경우 에러 응답 반환
-            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다.")
-        }
-
-        // 회원가입 성공 시 성공 응답 반환
+        userService.signUp(signUpRequest)
         return ResponseEntity.created(URI.create("/login")).build()
     }
 
@@ -70,41 +58,24 @@ class UserController(
             .body(userService.logout(userPrincipal, request, response))
     }
 
-    @Operation(summary = "본인 프로필 조회")
+    @Operation(summary = "프로필 조회")
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/me")
-    fun getMyProfile(
-        @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<MyProfileResponse> {
-        //로그인한 본인 프로필 보기
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(userService.getMyProfile(userPrincipal))
-    }
-
-    @Operation(summary = "타인 프로필 조회")
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{userId}")
-    fun getUser(
-        @PathVariable userId: Long,
-        @AuthenticationPrincipal userPrincipal: UserPrincipal
-    ): ResponseEntity<UserResponse> {
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(userService.getUser(userId, userPrincipal))
-
-    }
+    @GetMapping("/users/{userId}")
+    fun getProfile(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable userId: Long
+    ) = ResponseEntity.ok().body(userService.getProfile(userPrincipal, userId))
 
     @Operation(summary = "프로필 수정")
-    @PatchMapping("mypage/update")
-    fun updateUserProfile(
-        @RequestBody editRequest: EditRequest,
-        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/users/{userId}")
+    fun updateProfile(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @PathVariable userId: Long,
+        @RequestBody profileUpdateRequest: ProfileUpdateRequest
     ): ResponseEntity<String> {
-        userService.updateUserProfile(editRequest, userPrincipal)
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body("정보가 변경되었습니다.")
+        userService.updateProfile(profileUpdateRequest, userPrincipal)
+        return ResponseEntity.status(HttpStatus.OK).build()
     }
 
     @Operation(summary = "비밀번호 변경")

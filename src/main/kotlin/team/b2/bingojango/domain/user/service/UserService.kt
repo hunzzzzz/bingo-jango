@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.mail.service.MailService
 import team.b2.bingojango.domain.member.repository.MemberRepository
+import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.dto.request.*
 import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.model.User
@@ -31,6 +32,7 @@ import java.time.ZonedDateTime
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val refrigeratorRepository: RefrigeratorRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtPlugin: JwtPlugin,
     private val mailService: MailService,
@@ -276,39 +278,27 @@ class UserService(
         mailService.sendEmail(user.email, subject, body)
     }
 
-    // [API] 로그인한 본인 프로필 보기
-    @Transactional
-    fun getMyProfile(userPrincipal: UserPrincipal): MyProfileResponse {
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("Id")
-        return MyProfileResponse(
-            name = user.name,
-            nickname = user.nickname,
-            email = user.email,
-            phone = user.phone,
-            refrigerators = memberRepository.findAllByUserId(user.id!!).map { it.refrigerator.toResponse() },
-            createdAt = user.createdAt
-        )
-    }
+    /*
+        [API] 프로필 조회
+            - 타인의 프로필을 조회하는 경우, nickname, email, refrigerators(냉장고 목록), createdAt 조회 가능
+            - 본인의 프로필을 조회하는 경우, ProfileResponse 에 name, phone 정보까지 추가해서 리턴
+    */
+    fun getProfile(userPrincipal: UserPrincipal, userId: Long) =
+        entityFinder.getUser(userId)
+            .let {
+                ProfileResponse.getProfile(
+                    user = it,
+                    refrigerators = memberRepository.findAllByUserId(userId)
+                        .map { member -> member.refrigerator.toResponse() }
+                ).let { response ->
+                    if (userId == userPrincipal.id) response.updateMyProfile(it)
+                    response
+                }
+            }
 
-    // [API] 타인 프로필 보기
-    // 로그인한 유저가 본인 userId 조회 시 내 프로필보기로 넘어가기 (더 상세 정보 조회됨)
+    // 프로필 수정
     @Transactional
-    fun getUser(userId: Long, userPrincipal: UserPrincipal): UserResponse {
-        val user = userRepository.findByIdOrNull(userId) ?: throw ModelNotFoundException("userId")
-        if (userId == userPrincipal.id) {
-            return getMyProfile(userPrincipal)
-        }
-        return UserResponse(
-            nickname = user.nickname,
-            email = user.email,
-            refrigerators = memberRepository.findAllByUserId(userId).map { it.refrigerator.toResponse() },
-            createdAt = user.createdAt
-        )
-    }
-
-    // 유저 프로필 수정
-    @Transactional
-    fun updateUserProfile(request: EditRequest, userPrincipal: UserPrincipal) {
+    fun updateProfile(request: ProfileUpdateRequest, userPrincipal: UserPrincipal) {
         val user = getUserInfo(userPrincipal)
         if (userRepository.existsByNickname(request.nickname)) throw IllegalArgumentException("존재하는 닉네임이에요.")
         if (userRepository.existsByEmail(request.email)) throw IllegalArgumentException("존재하는 이메일이에요.")
@@ -317,8 +307,6 @@ class UserService(
         user.nickname = request.nickname
         user.email = request.email
         user.phone = request.phone
-
-        userRepository.save(user)
     }
 
     // 유저 비밀번호 수정
