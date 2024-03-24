@@ -10,7 +10,7 @@ class KakaoUserInfoResponse(
     id: Long,
     properties: KakaoUserPropertiesResponse,
     kakaoAccount: KakaoUserAccountResponse, //카카오로부터 이렇게 응답이 오면
-): OAuth2LoginUserInfo(
+) : OAuth2LoginUserInfo(
     provider = OAuth2Provider.KAKAO,
     id = id.toString(),
     nickname = properties.nickname, //부모객체의 모습으로 초기화됨 (업캐스팅)

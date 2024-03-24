@@ -10,7 +10,7 @@ data class RefreshToken(
     @JoinColumn(name = "user_id")
     val user: User,
     val refreshToken: String
-){
+) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "token_id", nullable = false)

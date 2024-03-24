@@ -22,6 +22,7 @@ class RedisConfig(
     @Value("\${spring.data.redis.password}") private val redisPassword: String
 ) {
 
+    // LettuceConnectionFactory 세팅
     @Bean
     fun redisConnectionFactory() =
         RedisStandaloneConfiguration().let {
@@ -30,6 +31,7 @@ class RedisConfig(
             it.setPassword(redisPassword)
             it
         }.let { LettuceConnectionFactory(it) }
+
     //필요 시 추가
 //    @Bean
 //    fun objectMapper()=
@@ -38,9 +40,11 @@ class RedisConfig(
 //            it.registerModule(JavaTimeModule())
 //        }!!
 
+    // 발행된 메시지를 레디스에서 받아서 처리시키는 메소드
     @Bean
     fun adapter(listener: ListenerService) = MessageListenerAdapter(listener, "onMessage")
 
+    // 레디스 템플릿
     @Bean
     fun redisTemplate(
         factory: RedisConnectionFactory,
@@ -53,12 +57,12 @@ class RedisConfig(
         return template
     }
 
+    // 레디스에서 메시지를 인식할 시 해석할 수 있도록 세팅
     @Bean
     fun redisMessageListenerContainer(
         factory: RedisConnectionFactory,
         adapter: MessageListenerAdapter,
         topic: ChannelTopic
-//        topic: ChannelTopic 혹은 PatternTopic 찾아보기
     ): RedisMessageListenerContainer {
         val container = RedisMessageListenerContainer()
         container.setConnectionFactory(factory)
@@ -66,6 +70,7 @@ class RedisConfig(
         return container
     }
 
+    // scale-out 된 서버 명시
     @Bean
     fun topic() = ChannelTopic("chatroom")
 

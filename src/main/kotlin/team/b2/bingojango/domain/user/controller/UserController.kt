@@ -1,7 +1,6 @@
 package team.b2.bingojango.domain.user.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -14,14 +13,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.user.dto.request.*
-import team.b2.bingojango.domain.user.dto.response.*
+import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.UploadImageResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
 import java.net.URI
 
 @Tag(name = "user", description = "유저")
 @RestController
-@RequestMapping
+@RequestMapping("/users")
 class UserController(
     private val userService: UserService
 ) {
@@ -47,7 +48,7 @@ class UserController(
 
     @Operation(summary = "로그아웃")
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/users/logout")
+    @PostMapping("/logout")
     fun logout(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         request: HttpServletRequest,
@@ -74,7 +75,7 @@ class UserController(
 
     @Operation(summary = "프로필 조회")
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     fun getProfile(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable userId: Long
@@ -82,19 +83,19 @@ class UserController(
 
     @Operation(summary = "프로필 수정")
     @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/users/{userId}")
+    @PatchMapping("/{userId}")
     fun updateProfile(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable userId: Long,
         @RequestBody profileUpdateRequest: ProfileUpdateRequest
     ): ResponseEntity<String> {
-        userService.updateProfile(userPrincipal, userId, profileUpdateRequest)
+        userService.updateProfile(userPrincipal, profileUpdateRequest)
         return ResponseEntity.status(HttpStatus.OK).build()
     }
 
     @Operation(summary = "비밀번호 변경")
     @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/users/{userId}/change/password")
+    @PatchMapping("/{userId}/change/password")
     fun updatePassword(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable userId: Long,
@@ -105,9 +106,8 @@ class UserController(
     }
 
     @Operation(summary = "회원 탈퇴 (SoftDelete, Scheduled)")
-    @PutMapping("mypage/withdraw")
+    @PutMapping("/withdraw")
     fun withdrawUser(
-        @Parameter(description = "password 만 입력")
         @RequestBody withdrawRequest: WithdrawRequest,
         @AuthenticationPrincipal userPrincipal: UserPrincipal
     ): ResponseEntity<String> {

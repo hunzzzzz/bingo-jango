@@ -12,7 +12,6 @@ import team.b2.bingojango.domain.chatting.dto.ChatResponse
 import team.b2.bingojango.domain.chatting.model.Chat
 import team.b2.bingojango.domain.chatting.model.ChatRoom
 import team.b2.bingojango.domain.chatting.model.ChatStatus
-import team.b2.bingojango.domain.chatting.model.toResponse
 import team.b2.bingojango.domain.chatting.repository.ChatRepository
 import team.b2.bingojango.domain.chatting.repository.ChatRoomRepository
 import team.b2.bingojango.domain.member.repository.MemberRepository
@@ -32,16 +31,12 @@ class ChatService(
     private val redisTemplate: RedisTemplate<String, Any>
 ) {
 
-    // 채팅 전송
+    // 채팅 전송 v1, 단일 서버
     @Transactional
     fun sendMessage(
         userPrincipal: UserPrincipal,
         request: ChatRequest,
     ): ChatResponse {
-//        println("hA값 $headerAccessor")
-//        println("hA.u 값 ${headerAccessor.user}")
-//        val authorHeader= headerAccessor.getFirstNativeHeader("Authorization")
-//        val userInfo= (headerAccessor.user as JwtAuthenticationToken).principal )
         val user = getUserInfo(userPrincipal)
         val chatRoom = getChatRoomInfo(request.chatRoomId.toLong())
         val member = getMemberInfo(user, chatRoom)
@@ -54,19 +49,14 @@ class ChatService(
                 member = member,
             )
         )
-        val response = ChatResponse(
-            chatRoomId = save.chatRoom.id!!,
-            nickname = save.member.user.nickname,
-            content = save.content,
-            status = save.status,
-            createdAt = save.createdAt,
-            isMyChat = save.member.user.id == user.id
-        )
+        val response = toResponse(save, user)
         messageTemplate.convertAndSend("/sub/chatroom/${response.chatRoomId}", response)
 
         return response
     }
 
+    // 채팅 전송 v2, 스케일 아웃 고려 (v1, v2 구조가 비슷해서 duplicate 경고가 뜨는 중,
+    // 추후 한 기능이 확정 시 다른 한 쪽은 삭제)
     @Transactional
     fun sendMessage2(
         userPrincipal: UserPrincipal,
@@ -84,13 +74,13 @@ class ChatService(
                 member = member,
             )
         )
+        val response = toResponse(save, user)
         val topic = channelTopic.topic
-        val response = save.toResponse()
         redisTemplate.convertAndSend(topic, response)
         return response
     }
 
-    // 채팅 내역 불러오기
+    // [API] 채팅 내역 불러오기 v1 모든 내역 호출
     fun getAllChat(userPrincipal: UserPrincipal, chatRoomId: Long): List<ChatResponse> {
         val user = getUserInfo(userPrincipal)
         val chatRoom = getChatRoomInfo(chatRoomId)
@@ -101,19 +91,12 @@ class ChatService(
             val chats = chatRepository.findAllByChatRoomId(chatRoomId)
 
             return chats.map {
-                ChatResponse(
-                    chatRoomId = it.chatRoom.id!!,
-                    content = it.content,
-                    nickname = it.member.user.nickname,
-                    status = it.status,
-                    createdAt = it.createdAt,
-                    isMyChat = it.member.user.id==user.id
-                )
+                toResponse(it, user)
             }
         }
     }
 
-    // 채팅 내역 불러오기 v2
+    // [API] 채팅 내역 불러오기 v2 커서 페이지네이션 적용
     fun getAllChat2(userPrincipal: UserPrincipal, chatRoomId: Long, cursor: Long?, size: Int): List<ChatResponse> {
         val user = getUserInfo(userPrincipal)
         val chatRoom = getChatRoomInfo(chatRoomId)
@@ -123,26 +106,44 @@ class ChatService(
         else {
             val pageable = PageRequest.of(0, size)
             return if (cursor == null) {
-                chatRepository.findFirstPage(chatRoomId, pageable).map { it.toResponse() }
+                chatRepository.findFirstPage(chatRoomId, pageable).map {
+                    toResponse(it, user)
+                }
             } else {
-                chatRepository.findNextPage(chatRoomId, cursor, pageable).map { it.toResponse() }
+                chatRepository.findNextPage(chatRoomId, cursor, pageable).map {
+                    toResponse(it, user)
+                }
             }
         }
     }
 
-    // 테스트용 채팅방 불러오기
+    // 테스트용 채팅방 불러오기 (추후 삭제)
     fun getAllChatRoom(userPrincipal: UserPrincipal): List<ChatRoom> {
         val members = memberRepository.findAllByUserId(userPrincipal.id)
         val chatRooms = members.map { it.chatRoom }
         return chatRooms
     }
 
+    // 채팅에서 유저 정보 취득
     private fun getUserInfo(userPrincipal: UserPrincipal) =
         userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("userId")
 
+    // 채팅방 ID에서 채팅방 정보 취득
     private fun getChatRoomInfo(chatRoomId: Long) =
         chatRoomRepository.findByIdOrNull(chatRoomId) ?: throw ModelNotFoundException("chatRoomId")
 
+    // 유저, 채팅방 정보로부터 채팅방 멤버 정보 취득
     private fun getMemberInfo(user: User, chatRoom: ChatRoom) =
         memberRepository.findByUserAndChatRoom(user, chatRoom) ?: throw ModelNotFoundException("chatRoomId")
+
+    // 채팅 및 유저 정보로 ChatResponse 생성 (+채팅의 본인 여부 확인)
+    private fun toResponse(chat: Chat, user: User) =
+        ChatResponse(
+            chatRoomId = chat.chatRoom.id!!,
+            content = chat.content,
+            nickname = chat.member.user.nickname,
+            status = chat.status,
+            createdAt = chat.createdAt,
+            isMyChat = chat.member.user.id == user.id
+        )
 }

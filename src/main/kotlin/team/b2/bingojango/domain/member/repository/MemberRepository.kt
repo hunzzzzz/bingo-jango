@@ -20,7 +20,7 @@ interface MemberRepository : JpaRepository<Member, Long> {
 
     fun findByUserAndChatRoom(user: User, chatRoom: ChatRoom): Member?
 
-    fun findByUserId (userId: Long): Member?
+    fun findByUserId(userId: Long): Member?
 
     fun existsByUserAndRefrigerator(user: User, refrigerator: Refrigerator): Boolean
 }

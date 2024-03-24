@@ -1,7 +1,6 @@
 package team.b2.bingojango.domain.chatting.model
 
 import jakarta.persistence.*
-import team.b2.bingojango.domain.chatting.dto.ChatResponse
 import team.b2.bingojango.domain.member.model.Member
 import team.b2.bingojango.global.entity.BaseEntity
 
@@ -29,15 +28,4 @@ class Chat(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_id")
     val id: Long? = null
-}
-
-fun Chat.toResponse(): ChatResponse {
-    return ChatResponse(
-        chatRoomId = chatRoom.id!!,
-        content = content,
-        nickname = member.user.nickname,
-        status = status,
-        createdAt = createdAt,
-    )
-
 }

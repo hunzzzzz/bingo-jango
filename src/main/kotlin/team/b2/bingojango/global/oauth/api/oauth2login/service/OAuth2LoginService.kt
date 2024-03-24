@@ -26,7 +26,7 @@ class OAuth2LoginService(
         val userInfo = oAuth2ClientService.login(provider, authorizationCode)
         val user = socialMemberService.registerIfAbsent(userInfo)
         val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
-        CookieUtil.addCookie(response,"refreshToken",refreshToken, cookieExpirationTime)
+        CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieExpirationTime)
         jwtPlugin.storeToken(user, refreshToken)
         val accessToken = jwtPlugin.generateAccessToken(user.id.toString(), user.email, user.role.name)
         return LoginResponse(accessToken)

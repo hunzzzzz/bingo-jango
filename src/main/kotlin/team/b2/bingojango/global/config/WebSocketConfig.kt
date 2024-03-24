@@ -12,15 +12,13 @@ import team.b2.bingojango.domain.chatting.handler.StompHandler
 @EnableWebSocketMessageBroker
 class WebSocketConfig(
     private val stompHandler: StompHandler
-): WebSocketMessageBrokerConfigurer{
-
+) : WebSocketMessageBrokerConfigurer {
 
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/ws")
 //            .setAllowedOriginPatterns("*")
             .withSockJS()
-        // 주소 -> ws://localhost:8080/ws
     }
 
     override fun configureMessageBroker(config: MessageBrokerRegistry) {
@@ -30,6 +28,7 @@ class WebSocketConfig(
         config.setApplicationDestinationPrefixes("/pub")
     }
 
+    // 실제 발행 전 확인 절차
     override fun configureClientInboundChannel(registration: ChannelRegistration) {
         registration.interceptors(stompHandler)
     }

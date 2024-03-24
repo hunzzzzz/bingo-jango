@@ -10,6 +10,7 @@ import team.b2.bingojango.global.querydsl.QueryDslSupport
 class ChatRepositoryImpl : QueryDslSupport(), CustomChatRepository {
     private val chat = QChat.chat
 
+    // 최초 호출 (cursor가 null인 경우)
     override fun findFirstPage(chatRoomId: Long, pageable: Pageable): List<Chat> {
         val query = queryFactory
             .selectFrom(chat)
@@ -19,6 +20,7 @@ class ChatRepositoryImpl : QueryDslSupport(), CustomChatRepository {
         return query.fetch()
     }
 
+    // 페이지네이션
     override fun findNextPage(chatRoomId: Long, cursor: Long, pageable: Pageable): List<Chat> {
         val query = queryFactory
             .selectFrom(chat)

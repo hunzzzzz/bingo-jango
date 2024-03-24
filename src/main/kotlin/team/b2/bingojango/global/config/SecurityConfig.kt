@@ -41,9 +41,9 @@ class SecurityConfig(
             .cors { it.disable() }
             .headers { it.frameOptions { foc -> foc.disable() } }
             .authorizeHttpRequests {
-                    it.requestMatchers(*allowedUrls).permitAll()
-                        .requestMatchers(*anonymousUrls).anonymous()
-                        .anyRequest().authenticated()
+                it.requestMatchers(*allowedUrls).permitAll()
+                    .requestMatchers(*anonymousUrls).anonymous()
+                    .anyRequest().authenticated()
             }
             .exceptionHandling {
                 it.authenticationEntryPoint(authenticationEntryPoint)

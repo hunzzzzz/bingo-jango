@@ -22,11 +22,11 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
 class RefrigeratorService(
-        private val refrigeratorRepository: RefrigeratorRepository,
-        private val memberRepository: MemberRepository,
-        private val userRepository: UserRepository,
-        private val chatRoomService: ChatRoomService,
-        private val mailRepository: MailRepository,
+    private val refrigeratorRepository: RefrigeratorRepository,
+    private val memberRepository: MemberRepository,
+    private val userRepository: UserRepository,
+    private val chatRoomService: ChatRoomService,
+    private val mailRepository: MailRepository,
 ) {
     //[API] 냉장고 목록 조회
     //1. 로그인한 유저 정보로 멤버 조회
@@ -68,7 +68,8 @@ class RefrigeratorService(
     fun joinRefrigeratorByPassword(userPrincipal: UserPrincipal, request: JoinByPasswordRequest): RefrigeratorResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         //확인사항1:
-        val refrigerator = refrigeratorRepository.findByName(request.name) ?: throw ModelNotFoundException("Refrigerator")
+        val refrigerator =
+            refrigeratorRepository.findByName(request.name) ?: throw ModelNotFoundException("Refrigerator")
         //확인사항2:
         if (refrigerator.password != request.password) throw IllegalArgumentException("냉장고의 비밀번호가 일치하지 않습니다.")
 
@@ -86,7 +87,10 @@ class RefrigeratorService(
     //5. Member 권한으로 멤버로 참여
     //6. RefrigeratorResponse 반환
     @Transactional
-    fun joinRefrigeratorByInvitationCode(userPrincipal: UserPrincipal, request: JoinByInvitationCodeRequest): RefrigeratorResponse {
+    fun joinRefrigeratorByInvitationCode(
+        userPrincipal: UserPrincipal,
+        request: JoinByInvitationCodeRequest
+    ): RefrigeratorResponse {
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
         val mail = mailRepository.findByCode(request.invitationCode) ?: throw ModelNotFoundException("Mail")
         val refrigerator = mail.refrigerator

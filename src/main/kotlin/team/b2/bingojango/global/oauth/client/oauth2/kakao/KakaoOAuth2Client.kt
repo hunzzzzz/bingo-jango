@@ -1,7 +1,5 @@
 package team.b2.bingojango.global.oauth.client.oauth2.kakao
 
-import team.b2.bingojango.global.oauth.client.oauth2.kakao.dto.KakaoTokenResponse
-import team.b2.bingojango.global.oauth.client.oauth2.kakao.dto.KakaoUserInfoResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -9,6 +7,8 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import team.b2.bingojango.global.oauth.client.oauth2.OAuth2Client
+import team.b2.bingojango.global.oauth.client.oauth2.kakao.dto.KakaoTokenResponse
+import team.b2.bingojango.global.oauth.client.oauth2.kakao.dto.KakaoUserInfoResponse
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
 
 @Component
@@ -16,7 +16,7 @@ class KakaoOAuth2Client(
     @Value("\${oauth2.kakao.client_id}") val clientId: String,
     @Value("\${oauth2.kakao.redirect_url}") val redirectUrl: String,
     private val restClient: RestClient
-): OAuth2Client {
+) : OAuth2Client {
 
     override fun generateLoginPageUrl(): String {
         return StringBuilder(KAKAO_AUTH_BASE_URL)
