@@ -7,11 +7,10 @@ import org.springframework.http.MediaType
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.stereotype.Component
-import team.b2.bingojango.global.exception.ErrorResponse
 import team.b2.bingojango.global.exception.SecurityResponse
 
 @Component
-class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
+class CustomAuthenticationEntryPoint : AuthenticationEntryPoint {
     override fun commence(
         request: HttpServletRequest,
         response: HttpServletResponse,

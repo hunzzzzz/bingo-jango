@@ -7,11 +7,10 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.stereotype.Component
-import team.b2.bingojango.global.exception.ErrorResponse
 import team.b2.bingojango.global.exception.SecurityResponse
 
 @Component
-class CustomAccessDeniedHandler: AccessDeniedHandler {
+class CustomAccessDeniedHandler : AccessDeniedHandler {
     override fun handle(
         request: HttpServletRequest,
         response: HttpServletResponse,

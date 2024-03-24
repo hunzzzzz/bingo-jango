@@ -10,12 +10,13 @@ class MailUtility(
     private val javaMailSender: JavaMailSender
 ) {
     //인증번호 생성
-    fun createCode() : String {
+    fun createCode(): String {
         val length = 6
-        val code = UUID.randomUUID().toString().substring(0,length)
+        val code = UUID.randomUUID().toString().substring(0, length)
         return code
 
     }
+
     //이메일 발송하기
     fun sendMail(email: String): String {
         val code = createCode()

@@ -16,13 +16,11 @@ class StompHandler(
     private val jwtPlugin: JwtPlugin,
 ) : ChannelInterceptor {
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
-//        val accessor = StompHeaderAccessor.wrap(message)
         val accessor = StompHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
             ?: throw AccessDeniedException("")
 
         if (accessor.command == StompCommand.CONNECT) {
-//            val token = accessor.getFirstNativeHeader("Authorization") ?: throw AccessDeniedException("")
-            val token = accessor.getFirstNativeHeader("Authorization")?.let {
+            accessor.getFirstNativeHeader("Authorization")?.let {
                 jwtPlugin.validateToken(it)
                     .onSuccess {
                         val userId = it.payload.subject.toLong()
@@ -44,29 +42,6 @@ class StompHandler(
                     }.getOrThrow()
             }
         }
-//            if (!jwtPlugin.validateToken(token).isSuccess) throw AccessDeniedException("")
-//            jwtPlugin.validateToken(token)
-//                .onSuccess {
-//                    val userId = it.payload.subject.toLong()
-//                    val role = it.payload.get("role", String::class.java)
-//                    val email = it.payload.get("email", String::class.java)
-//
-//                    val principal = UserPrincipal(
-//                        id = userId,
-//                        email = email,
-//                        roles = setOf(role)
-//                    )
-//
-//                    val authentication = JwtAuthenticationToken(
-//                        principal = principal,
-//                        details = null
-//                    )
-//                    accessor.user = authentication
-//
-//                }.onFailure {
-//                    throw AccessDeniedException("invalid token")
-//                }.getOrThrow()
-//        }
         return message
     }
 }

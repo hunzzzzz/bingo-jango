@@ -11,7 +11,7 @@ class OAuth2ClientService(
     fun login(provider: OAuth2Provider, authorizationCode: String): OAuth2LoginUserInfo {
         val client: OAuth2Client = this.selectClient(provider)
         return client.getAccessToken(authorizationCode)
-            .let { client.retrieveUserInfo(it)}
+            .let { client.retrieveUserInfo(it) }
     }
 
     fun generateLoginPageUrl(provider: OAuth2Provider): String {

@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.mail.service.MailService
 import team.b2.bingojango.domain.member.repository.MemberRepository
-import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.dto.request.*
 import team.b2.bingojango.domain.user.dto.response.*
 import team.b2.bingojango.domain.user.model.User
@@ -253,10 +252,12 @@ class UserService(
 
     // 프로필 수정
     @Transactional
-    fun updateProfile(userPrincipal: UserPrincipal, userId: Long, request: ProfileUpdateRequest) {
+    fun updateProfile(userPrincipal: UserPrincipal, request: ProfileUpdateRequest) {
         val user = entityFinder.getUser(userPrincipal.id)
-        if (userRepository.existsByNickname(request.nickname)) throw IllegalArgumentException("존재하는 닉네임이에요.")
-        if (userRepository.existsByEmail(request.email)) throw IllegalArgumentException("존재하는 이메일이에요.")
+        if (userRepository.existsByNickname(request.nickname) && request.nickname != user.nickname) throw IllegalArgumentException(
+            "존재하는 닉네임이에요."
+        )
+        if (userRepository.existsByEmail(request.email) && request.email != user.email) throw IllegalArgumentException("존재하는 이메일이에요.")
 
         user.name = request.name
         user.nickname = request.nickname
@@ -279,7 +280,7 @@ class UserService(
     }
 
     // 유저 탈퇴
-    @Transactional // request 재활용 하지 말고 하나 만들기 (기억)
+    @Transactional
     fun withdrawUser(request: WithdrawRequest, userPrincipal: UserPrincipal) {
         val user = entityFinder.getUser(userPrincipal.id)
         if (!passwordEncoder.matches(user.password, request.password)) throw IllegalArgumentException("비밀번호가 일치하지 않아요.")

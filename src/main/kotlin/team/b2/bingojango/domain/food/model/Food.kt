@@ -20,7 +20,7 @@ class Food(
     @Column(name = "expiration_date", nullable = false)
     var expirationDate: ZonedDateTime,
 
-    @Column(name = "count", nullable =  false)
+    @Column(name = "count", nullable = false)
     var count: Int,
 
     @ManyToOne

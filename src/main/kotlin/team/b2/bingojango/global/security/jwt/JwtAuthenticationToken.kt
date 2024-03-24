@@ -13,7 +13,7 @@ class JwtAuthenticationToken(
 
     init {
         super.setAuthenticated(true)
-        if (details != null)super.setDetails(details)
+        if (details != null) super.setDetails(details)
     }
 
     override fun getPrincipal() = principal

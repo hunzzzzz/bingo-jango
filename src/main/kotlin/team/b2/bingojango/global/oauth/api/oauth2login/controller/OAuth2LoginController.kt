@@ -19,7 +19,7 @@ class OAuth2LoginController(
     private val oAuth2LoginService: OAuth2LoginService,
     private val oAuth2ClientService: OAuth2ClientService
 ) {
-        @Operation(summary = "로그인 페이지로 Redirect 해주기")
+    @Operation(summary = "로그인 페이지로 Redirect 해주기")
     @PreAuthorize("isAnonymous()")
     @GetMapping("/oauth2/login/{provider}")
     fun redirectLoginPage(@PathVariable provider: OAuth2Provider, response: HttpServletResponse) {

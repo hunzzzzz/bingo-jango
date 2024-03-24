@@ -7,13 +7,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import team.b2.bingojango.domain.food.service.FoodService
-import team.b2.bingojango.domain.food.dto.AddFoodRequest
-import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
 import org.springframework.web.bind.annotation.*
+import team.b2.bingojango.domain.food.dto.AddFoodRequest
 import team.b2.bingojango.domain.food.dto.FoodResponse
+import team.b2.bingojango.domain.food.dto.UpdateFoodRequest
 import team.b2.bingojango.domain.food.model.FoodCategory
 import team.b2.bingojango.domain.food.model.SortFood
+import team.b2.bingojango.domain.food.service.FoodService
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Tag(name = "food", description = "음식")
@@ -37,14 +37,15 @@ class FoodController(
     @Operation(summary = "음식 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    fun getFood(@PathVariable refrigeratorId: Long,
-                @AuthenticationPrincipal userPrincipal: UserPrincipal,
-                @RequestParam(name = "cursorName", required = false) cursorName: String?,
-                @RequestParam(name= "size") size: Int
-    ): ResponseEntity<List<FoodResponse>>{
+    fun getFood(
+        @PathVariable refrigeratorId: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
+        @RequestParam(name = "cursorName", required = false) cursorName: String?,
+        @RequestParam(name = "size") size: Int
+    ): ResponseEntity<List<FoodResponse>> {
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(foodService.getFood(userPrincipal, refrigeratorId, cursorName, size))
+            .status(HttpStatus.OK)
+            .body(foodService.getFood(userPrincipal, refrigeratorId, cursorName, size))
     }
 
     @Operation(summary = "음식 추가")
@@ -104,7 +105,7 @@ class FoodController(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable refrigeratorId: Long,
         @RequestParam
-        (defaultValue = "0") page: Int,
+            (defaultValue = "0") page: Int,
         sort: SortFood?,
         category: FoodCategory?,
         count: Int?,

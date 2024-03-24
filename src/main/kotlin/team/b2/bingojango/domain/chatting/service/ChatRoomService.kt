@@ -9,14 +9,12 @@ import team.b2.bingojango.domain.chatting.repository.ChatRoomRepository
 import team.b2.bingojango.domain.member.model.MemberRole
 import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.refrigerator.model.Refrigerator
-import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
 
 @Service
 class ChatRoomService(
-    private val refrigeratorRepository: RefrigeratorRepository,
     private val chatRoomRepository: ChatRoomRepository,
     private val memberRepository: MemberRepository,
     private val userRepository: UserRepository,
@@ -33,7 +31,7 @@ class ChatRoomService(
             )
         )
 
-    // 채팅방 멤버 확인 (chatroom 기능 중 컨트롤러 필요한 유일 기능으로 chat 컨트롤러에 편입)
+    // 채팅방 멤버 확인 (ChatController에서 호출)
     fun getChatRoomMember(chatRoomId: Long, userPrincipal: UserPrincipal): List<String> {
         val chatRoom = chatRoomRepository.findByIdOrNull(chatRoomId) ?: throw ModelNotFoundException("chatRoom")
         val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("userId")
@@ -47,13 +45,14 @@ class ChatRoomService(
     }
 
     // 채팅방 삭제 (냉장고 삭제 로직에 추가)
-    fun deleteChatRoom(refrigerator: Refrigerator) {
+    // [API] 마지막 멤버가 냉장고를 탈퇴할 때 같이 실행되어 채팅방을 soft delete
+    fun deleteChatRoom(refrigerator: Refrigerator) { //
         val chatRoom = getChatRoom(refrigerator)
         chatRoom.chatRoomStatus = ChatRoomStatus.DELETED
         chatRoomRepository.save(chatRoom)
     }
 
-    // 채팅방 정보 객체 호출
+    // 냉장고로부터 채팅방 정보 취득
     fun getChatRoom(refrigerator: Refrigerator) =
         chatRoomRepository.findByRefrigerator(refrigerator) ?: throw ModelNotFoundException("refrigerator")
 

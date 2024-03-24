@@ -1,7 +1,6 @@
 package team.b2.bingojango.domain.food.repository
 
 import com.querydsl.core.BooleanBuilder
-import com.querydsl.core.types.ExpressionUtils.orderBy
 import org.springframework.data.domain.*
 import org.springframework.stereotype.Repository
 import team.b2.bingojango.domain.food.model.Food
@@ -11,7 +10,7 @@ import team.b2.bingojango.domain.food.model.SortFood
 import team.b2.bingojango.global.querydsl.QueryDslSupport
 
 @Repository
-class FoodRepositoryImpl: QueryDslSupport(), CustomFoodRepository {
+class FoodRepositoryImpl : QueryDslSupport(), CustomFoodRepository {
 
     private val food = QFood.food
     override fun findByFood(
@@ -27,7 +26,7 @@ class FoodRepositoryImpl: QueryDslSupport(), CustomFoodRepository {
 
         refrigeratorId.let { whereClause.and(food.refrigerator.id.eq(refrigeratorId)) }
         category?.let { whereClause.and(food.category.eq(category)) } //카테고리와 동일한 음식
-        count?.let { whereClause.and(food.count.loe(count))} //count 이하 갯수의 음식
+        count?.let { whereClause.and(food.count.loe(count)) } //count 이하 갯수의 음식
         keyword?.let { whereClause.and(food.name.contains(keyword)) } //검색어를 포함한 음식
 
         val totalCount = queryFactory.select(food.count()).from(food).where(whereClause).fetchOne() ?: 0L
@@ -52,22 +51,22 @@ class FoodRepositoryImpl: QueryDslSupport(), CustomFoodRepository {
 
     override fun findFirstPage(refrigeratorId: Long, pageable: Pageable): List<Food> {
         val query = queryFactory
-                .selectFrom(food)
-                .where(food.refrigerator.id.eq(refrigeratorId))
-                .orderBy(food.name.asc())
-                .limit(pageable.pageSize.toLong())
+            .selectFrom(food)
+            .where(food.refrigerator.id.eq(refrigeratorId))
+            .orderBy(food.name.asc())
+            .limit(pageable.pageSize.toLong())
         return query.fetch()
     }
 
     override fun findNextPage(refrigeratorId: Long, cursorName: String, pageable: Pageable): List<Food> {
         val query = queryFactory
-                .selectFrom(food)
-                .where(
-                        food.refrigerator.id.eq(refrigeratorId),
-                        food.name.gt(cursorName)
-                )
-                .orderBy(food.name.asc())
-                .limit(pageable.pageSize.toLong())
+            .selectFrom(food)
+            .where(
+                food.refrigerator.id.eq(refrigeratorId),
+                food.name.gt(cursorName)
+            )
+            .orderBy(food.name.asc())
+            .limit(pageable.pageSize.toLong())
         return query.fetch()
     }
 }

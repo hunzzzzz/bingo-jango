@@ -16,7 +16,7 @@ import java.util.*
 @PropertySource("classpath:application.yml")
 @Service
 class S3Service(
-        private val s3Client: AmazonS3Client
+    private val s3Client: AmazonS3Client
 ) {
 
     @Value("\${bucket}")
@@ -36,8 +36,9 @@ class S3Service(
         val byteArrayIs = ByteArrayInputStream(bytes)
 
         s3Client.putObject(
-                PutObjectRequest(bucket, dir + fileName, byteArrayIs, objMeta)
-                        .withCannedAcl(CannedAccessControlList.PublicRead))
+            PutObjectRequest(bucket, dir + fileName, byteArrayIs, objMeta)
+                .withCannedAcl(CannedAccessControlList.PublicRead)
+        )
 
         return s3Client.getUrl(bucket, dir + fileName).toString()
     }

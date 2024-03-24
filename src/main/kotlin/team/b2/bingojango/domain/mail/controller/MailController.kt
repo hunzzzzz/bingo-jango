@@ -22,7 +22,7 @@ class MailController(
     @PostMapping("/refrigerator/{refrigeratorId}/member")
     fun sendInvitationCode(
         @PathVariable refrigeratorId: Long,
-        @RequestParam email : String
+        @RequestParam email: String
     ): ResponseEntity<MailResponse> {
         return ResponseEntity
             .status(HttpStatus.OK)

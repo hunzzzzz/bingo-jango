@@ -31,7 +31,7 @@ class Member(
     val id: Long? = null
 
     companion object {
-        fun toEntity(user: User, role:MemberRole, refrigerator: Refrigerator, chatRoom: ChatRoom): Member {
+        fun toEntity(user: User, role: MemberRole, refrigerator: Refrigerator, chatRoom: ChatRoom): Member {
             return Member(
                 role = role,
                 user = user,

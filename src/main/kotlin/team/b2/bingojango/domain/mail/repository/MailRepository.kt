@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 import team.b2.bingojango.domain.mail.model.Mail
 
 @Repository
-interface MailRepository: JpaRepository<Mail, Long> {
+interface MailRepository : JpaRepository<Mail, Long> {
     fun findByCode(invitationCode: String): Mail?
 }

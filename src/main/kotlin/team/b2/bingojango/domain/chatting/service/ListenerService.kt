@@ -18,9 +18,12 @@ class ListenerService(
 
     override fun onMessage(message: Message, pattern: ByteArray?) {
         try {
+            // redis에서 발행된 데이터를 역직렬화
             val pubMessage = redisTemplate.stringSerializer.deserialize(message.body)
+            // ChatResponse로 맵핑
             val roomMessage = objectMapper.readValue(pubMessage, ChatResponse::class.java)
 //            val chatMessage= ChatResponse(roomMessage.chatRoomId, roomMessage.nickname, roomMessage.content, roomMessage.status, roomMessage.createdAt)
+            // 채팅 발행
             messageTemplate.convertAndSend("/sub/chatRoom/${roomMessage.chatRoomId}", roomMessage)
         } catch (e: Exception) {
             throw ModelNotFoundException("redis chatMessage")

@@ -1,5 +1,5 @@
 package team.b2.bingojango.domain.user.dto.response
 
-data class FindEmailResponse (
+data class FindEmailResponse(
     val hiddenEmail: String
 )
