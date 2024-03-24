@@ -47,7 +47,7 @@ class UserController(
 
     @Operation(summary = "로그아웃")
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/logout")
+    @PostMapping("/users/logout")
     fun logout(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         request: HttpServletRequest,
