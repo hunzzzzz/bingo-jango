@@ -63,7 +63,7 @@ class PurchaseService(
                     refrigerator = entityFinder.getRefrigerator(refrigeratorId)
                 )
             )
-            Unit // ????
+            Unit
         }
 
     /*
