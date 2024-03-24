@@ -22,17 +22,29 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 class FoodController(
     private val foodService: FoodService
 ) {
+//    @Operation(summary = "음식 조회")
+//    @PreAuthorize("isAuthenticated()")
+//    @GetMapping
+//    fun getFood(
+//            @PathVariable refrigeratorId: Long,
+//            @AuthenticationPrincipal userPrincipal: UserPrincipal
+//    ): ResponseEntity<List<FoodResponse>>{
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .body(foodService.getFood(userPrincipal, refrigeratorId))
+//    }
 
     @Operation(summary = "음식 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    fun getFood(
-            @PathVariable refrigeratorId: Long,
-            @AuthenticationPrincipal userPrincipal: UserPrincipal
+    fun getFood(@PathVariable refrigeratorId: Long,
+                @AuthenticationPrincipal userPrincipal: UserPrincipal,
+                @RequestParam(name = "cursorName", required = false) cursorName: String?,
+                @RequestParam(name= "size") size: Int
     ): ResponseEntity<List<FoodResponse>>{
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(foodService.getFood(userPrincipal, refrigeratorId))
+                .body(foodService.getFood(userPrincipal, refrigeratorId, cursorName, size))
     }
 
     @Operation(summary = "음식 추가")

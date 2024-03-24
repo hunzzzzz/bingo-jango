@@ -1,10 +1,8 @@
 package team.b2.bingojango.domain.food.repository
 
 import com.querydsl.core.BooleanBuilder
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
+import com.querydsl.core.types.ExpressionUtils.orderBy
+import org.springframework.data.domain.*
 import org.springframework.stereotype.Repository
 import team.b2.bingojango.domain.food.model.Food
 import team.b2.bingojango.domain.food.model.FoodCategory
@@ -50,5 +48,26 @@ class FoodRepositoryImpl: QueryDslSupport(), CustomFoodRepository {
         val contents = query.fetch()
 
         return PageImpl(contents, pageable, totalCount)
+    }
+
+    override fun findFirstPage(refrigeratorId: Long, pageable: Pageable): List<Food> {
+        val query = queryFactory
+                .selectFrom(food)
+                .where(food.refrigerator.id.eq(refrigeratorId))
+                .orderBy(food.name.asc())
+                .limit(pageable.pageSize.toLong())
+        return query.fetch()
+    }
+
+    override fun findNextPage(refrigeratorId: Long, cursorName: String, pageable: Pageable): List<Food> {
+        val query = queryFactory
+                .selectFrom(food)
+                .where(
+                        food.refrigerator.id.eq(refrigeratorId),
+                        food.name.gt(cursorName)
+                )
+                .orderBy(food.name.asc())
+                .limit(pageable.pageSize.toLong())
+        return query.fetch()
     }
 }
