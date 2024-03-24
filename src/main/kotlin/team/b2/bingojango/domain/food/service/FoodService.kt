@@ -1,6 +1,8 @@
 package team.b2.bingojango.domain.food.service
 
+import com.querydsl.core.types.dsl.Wildcard.count
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,16 +36,25 @@ class FoodService(
     [API] 음식 조회
     검증조건 : 본인이 속한 냉장고 이면서 / 속한 냉장고에 들어있는 음식일 경우 조회 가능
     */
-    fun getFood(userPrincipal: UserPrincipal, refrigeratorId: Long): List<FoodResponse> {
+//    fun getFood(userPrincipal: UserPrincipal, refrigeratorId: Long): List<FoodResponse> {
+//        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
+//        return foodRepository.findByRefrigeratorId(refrigeratorId)
+//                .map {
+//            FoodResponse(
+//                    category = it.category.name,
+//                    name = it.name,
+//                    expirationDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(it.expirationDate),
+//                    count = it.count,
+//            )
+//        }
+//    }
+    fun getFood(userPrincipal: UserPrincipal, refrigeratorId: Long, cursorName: String?, size: Int): List<FoodResponse> {
         validateAccessToRefrigerator(userPrincipal, refrigeratorId)
-        return foodRepository.findByRefrigeratorId(refrigeratorId)
-                .map {
-            FoodResponse(
-                    category = it.category.name,
-                    name = it.name,
-                    expirationDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(it.expirationDate),
-                    count = it.count,
-            )
+        val pageable = PageRequest.of(0, size)
+        return if (cursorName == null) {
+            foodRepository.findFirstPage(refrigeratorId, pageable).map{it.toResponse()}
+        } else {
+            foodRepository.findNextPage(refrigeratorId, cursorName, pageable).map{it.toResponse()}
         }
     }
 
