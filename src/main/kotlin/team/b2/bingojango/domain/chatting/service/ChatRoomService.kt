@@ -31,19 +31,6 @@ class ChatRoomService(
             )
         )
 
-    // 채팅방 멤버 확인 (ChatController에서 호출)
-    fun getChatRoomMember(chatRoomId: Long, userPrincipal: UserPrincipal): List<String> {
-        val chatRoom = chatRoomRepository.findByIdOrNull(chatRoomId) ?: throw ModelNotFoundException("chatRoom")
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("userId")
-        val member = memberRepository.findByUserAndChatRoom(user, chatRoom) ?: throw ModelNotFoundException("memberId")
-        if (member.chatRoom == chatRoom) {
-            val members = memberRepository.findAllByRefrigerator(chatRoom.refrigerator)
-            return members
-                .sortedByDescending { it.role == MemberRole.STAFF }
-                .map { "${it.user.name} / ${it.role} \n" }
-        } else throw IllegalArgumentException("채팅창 멤버가 아니에요.")
-    }
-
     // 채팅방 삭제 (냉장고 삭제 로직에 추가)
     // [API] 마지막 멤버가 냉장고를 탈퇴할 때 같이 실행되어 채팅방을 soft delete
     fun deleteChatRoom(refrigerator: Refrigerator) { //

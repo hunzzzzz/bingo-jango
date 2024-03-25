@@ -250,36 +250,35 @@ class UserService(
                 }
             }
 
-    // 프로필 수정
+    // [API]프로필 수정
+    // - 닉네임 중복 불가
+    // - 이메일 중복 불가
     @Transactional
     fun updateProfile(userPrincipal: UserPrincipal, request: ProfileUpdateRequest) {
         val user = entityFinder.getUser(userPrincipal.id)
-        if (userRepository.existsByNickname(request.nickname) && request.nickname != user.nickname) throw IllegalArgumentException(
-            "존재하는 닉네임이에요."
-        )
-        if (userRepository.existsByEmail(request.email) && request.email != user.email) throw IllegalArgumentException("존재하는 이메일이에요.")
+        if (userRepository.existsByNickname(request.nickname) && request.nickname != user.nickname)
+            throw IllegalArgumentException("존재하는 닉네임이에요.")
+        if (userRepository.existsByEmail(request.email) && request.email != user.email)
+            throw IllegalArgumentException("존재하는 이메일이에요.")
 
-        user.name = request.name
-        user.nickname = request.nickname
-        user.email = request.email
-        user.phone = request.phone
+        user.updateProfileSupport(request)
+        userRepository.save(user)
     }
 
-    // 유저 비밀번호 수정
+    // [API] 유저 비밀번호 수정
+    // 1. 기존의 비밀번호 확인
+    // 2. 새 비밀번호 및 새 비밀번호 재작성 일치 확인
     @Transactional
-    fun updatePassword(userPrincipal: UserPrincipal, userId: Long, request: PasswordRequest) {
+    fun updatePassword(userPrincipal: UserPrincipal, request: PasswordRequest) {
         val user = entityFinder.getUser(userPrincipal.id)
-        if (!passwordEncoder.matches(
-                user.password,
-                request.password
-            )
+        if (!passwordEncoder.matches(user.password, request.password)
         ) throw IllegalArgumentException("기존의 비밀번호가 일치하지 않아요.")
         if (request.newPassword != request.reNewPassword) throw IllegalArgumentException("새로운 비밀번호과 비밀번호 확인이 일치하지 않아요.")
 
         user.password = passwordEncoder.encode(request.newPassword)
     }
 
-    // 유저 탈퇴
+    // [API] 유저 탈퇴, 소프트 딜리트
     @Transactional
     fun withdrawUser(request: WithdrawRequest, userPrincipal: UserPrincipal) {
         val user = entityFinder.getUser(userPrincipal.id)

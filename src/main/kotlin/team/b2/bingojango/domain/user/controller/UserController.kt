@@ -83,10 +83,9 @@ class UserController(
 
     @Operation(summary = "프로필 수정")
     @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/{userId}")
+    @PatchMapping("/change/profile")
     fun updateProfile(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
-        @PathVariable userId: Long,
         @RequestBody profileUpdateRequest: ProfileUpdateRequest
     ): ResponseEntity<String> {
         userService.updateProfile(userPrincipal, profileUpdateRequest)
@@ -95,13 +94,12 @@ class UserController(
 
     @Operation(summary = "비밀번호 변경")
     @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/{userId}/change/password")
+    @PatchMapping("/change/password")
     fun updatePassword(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
-        @PathVariable userId: Long,
         @RequestBody passwordRequest: PasswordRequest
     ): ResponseEntity<String> {
-        userService.updatePassword(userPrincipal, userId, passwordRequest)
+        userService.updatePassword(userPrincipal, passwordRequest)
         return ResponseEntity.status(HttpStatus.OK).build()
     }
 
