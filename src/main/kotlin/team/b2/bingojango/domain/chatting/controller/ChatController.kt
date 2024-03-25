@@ -25,10 +25,9 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 @RestController
 class ChatController(
     private val chatService: ChatService,
-    private val chatRoomService: ChatRoomService,
 ) {
 
-    // 채팅 전송
+    // [API] 채팅 전송
     @Operation(summary = "채팅 발송 (싱글 서버)")
     @PreAuthorize("isAuthenticated()")
     @MessageMapping("/chatroom/sendMessage")
@@ -40,7 +39,7 @@ class ChatController(
         return chatService.sendMessage(userPrincipal, chatRequest)
     }
 
-    // 스케일 아웃을 고려한 채팅 전송
+    // [API] 스케일 아웃을 고려한 채팅 전송
     @Operation(summary = "채팅 발송 (서버 확장 레디스)")
     @PreAuthorize("isAuthenticated()")
     @MessageMapping("api/v2/chatroom/sendMessage2")
@@ -52,7 +51,7 @@ class ChatController(
         return chatService.sendMessage2(userPrincipal, chatRequest)
     }
 
-    // 퇴장 시 감지 코드
+    // 퇴장 시 감지 코드 (현재 미도입)
 //        @EventListener
 //        fun webSocketDisconnectListener(event: SessionDisconnectEvent) {
 //            val headerAccessor = StompHeaderAccessor.wrap(event.message)
@@ -60,21 +59,7 @@ class ChatController(
 //            val roomId = headerAccessor.sessionAttributes?.get("roomId")
 //        }
 
-    // 채팅방 멤버 확인, 추후 v1경로 삭제(테스트를 위해 유지중)
-    @Operation(summary = "채팅방 멤버 출력")
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/v1/{chatRoomId}/member")
-    fun getChatRoomMember(
-        // memberService에 동일 기능 존재, 기능 선택 필요
-        @PathVariable chatRoomId: Long,
-        @AuthenticationPrincipal userPrincipal: UserPrincipal,
-    ): ResponseEntity<List<String>> {
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(chatRoomService.getChatRoomMember(chatRoomId, userPrincipal))
-    }
-
-    // 채팅 목록 가져오기 , 추후 삭제(테스트를 위해 유지중)
+    // 채팅 목록 가져오기 v1
     @Operation(summary = "채팅 내역 출력 (임시)")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/v1/{chatRoomId}")

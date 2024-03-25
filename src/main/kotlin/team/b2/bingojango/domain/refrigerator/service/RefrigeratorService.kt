@@ -19,14 +19,15 @@ import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.DuplicateValueException
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
+import team.b2.bingojango.global.util.EntityFinder
 
 @Service
 class RefrigeratorService(
     private val refrigeratorRepository: RefrigeratorRepository,
     private val memberRepository: MemberRepository,
-    private val userRepository: UserRepository,
     private val chatRoomService: ChatRoomService,
     private val mailRepository: MailRepository,
+    private val entityFinder: EntityFinder,
 ) {
     //[API] 냉장고 목록 조회
     //1. 로그인한 유저 정보로 멤버 조회
@@ -51,10 +52,10 @@ class RefrigeratorService(
     fun addRefrigerator(userPrincipal: UserPrincipal, request: AddRefrigeratorRequest): RefrigeratorResponse {
         if (refrigeratorRepository.existsRefrigeratorByName(request.name)) throw DuplicateValueException("중복된 냉장고 이름 입니다.")
         if (request.password != request.rePassword) throw IllegalArgumentException("비밀번호와 비밀번호확인이 일치하지 않습니다.")
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        val user= entityFinder.getUser(userPrincipal.id)
         val refrigerator = refrigeratorRepository.save(Refrigerator.toEntity(request))
         val chatRoom = chatRoomService.buildChatRoom(refrigerator, userPrincipal)
-        val member = memberRepository.save(Member.toEntity(user, MemberRole.STAFF, refrigerator, chatRoom))
+        memberRepository.save(Member.toEntity(user, MemberRole.STAFF, refrigerator, chatRoom))
         return refrigerator.toResponse()
     }
 
@@ -66,7 +67,7 @@ class RefrigeratorService(
     //5. RefrigeratorResponse 반환
     @Transactional
     fun joinRefrigeratorByPassword(userPrincipal: UserPrincipal, request: JoinByPasswordRequest): RefrigeratorResponse {
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        val user= entityFinder.getUser(userPrincipal.id)
         //확인사항1:
         val refrigerator =
             refrigeratorRepository.findByName(request.name) ?: throw ModelNotFoundException("Refrigerator")
@@ -91,7 +92,7 @@ class RefrigeratorService(
         userPrincipal: UserPrincipal,
         request: JoinByInvitationCodeRequest
     ): RefrigeratorResponse {
-        val user = userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("User")
+        val user= entityFinder.getUser(userPrincipal.id)
         val mail = mailRepository.findByCode(request.invitationCode) ?: throw ModelNotFoundException("Mail")
         val refrigerator = mail.refrigerator
         val chatRoom = chatRoomService.getChatRoom(refrigerator)

@@ -19,6 +19,7 @@ import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.repository.UserRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.security.util.UserPrincipal
+import team.b2.bingojango.global.util.EntityFinder
 
 @Service
 class ChatService(
@@ -28,7 +29,8 @@ class ChatService(
     private val chatRoomRepository: ChatRoomRepository,
     private val messageTemplate: SimpMessageSendingOperations,
     private val channelTopic: ChannelTopic,
-    private val redisTemplate: RedisTemplate<String, Any>
+    private val redisTemplate: RedisTemplate<String, Any>,
+    private val entityFinder: EntityFinder,
 ) {
 
     // 채팅 전송 v1, 단일 서버
@@ -37,7 +39,7 @@ class ChatService(
         userPrincipal: UserPrincipal,
         request: ChatRequest,
     ): ChatResponse {
-        val user = getUserInfo(userPrincipal)
+        val user = entityFinder.getUser(userPrincipal.id)
         val chatRoom = getChatRoomInfo(request.chatRoomId.toLong())
         val member = getMemberInfo(user, chatRoom)
 
@@ -62,7 +64,7 @@ class ChatService(
         userPrincipal: UserPrincipal,
         request: ChatRequest,
     ): ChatResponse {
-        val user = getUserInfo(userPrincipal)
+        val user = entityFinder.getUser(userPrincipal.id)
         val chatRoom = getChatRoomInfo(request.chatRoomId.toLong())
         val member = getMemberInfo(user, chatRoom)
 
@@ -82,7 +84,7 @@ class ChatService(
 
     // [API] 채팅 내역 불러오기 v1 모든 내역 호출
     fun getAllChat(userPrincipal: UserPrincipal, chatRoomId: Long): List<ChatResponse> {
-        val user = getUserInfo(userPrincipal)
+        val user = entityFinder.getUser(userPrincipal.id)
         val chatRoom = getChatRoomInfo(chatRoomId)
         val member = getMemberInfo(user, chatRoom)
 
@@ -98,7 +100,7 @@ class ChatService(
 
     // [API] 채팅 내역 불러오기 v2 커서 페이지네이션 적용
     fun getAllChat2(userPrincipal: UserPrincipal, chatRoomId: Long, cursor: Long?, size: Int): List<ChatResponse> {
-        val user = getUserInfo(userPrincipal)
+        val user = entityFinder.getUser(userPrincipal.id)
         val chatRoom = getChatRoomInfo(chatRoomId)
         val member = getMemberInfo(user, chatRoom)
 
@@ -123,10 +125,6 @@ class ChatService(
         val chatRooms = members.map { it.chatRoom }
         return chatRooms
     }
-
-    // 채팅에서 유저 정보 취득
-    private fun getUserInfo(userPrincipal: UserPrincipal) =
-        userRepository.findByIdOrNull(userPrincipal.id) ?: throw ModelNotFoundException("userId")
 
     // 채팅방 ID에서 채팅방 정보 취득
     private fun getChatRoomInfo(chatRoomId: Long) =

@@ -1,6 +1,7 @@
 package team.b2.bingojango.domain.user.model
 
 import jakarta.persistence.*
+import team.b2.bingojango.domain.user.dto.request.ProfileUpdateRequest
 import team.b2.bingojango.global.entity.BaseEntity
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
 
@@ -44,4 +45,12 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     val id: Long? = null
+
+
+    fun updateProfileSupport(request: ProfileUpdateRequest){
+        this.name = request.name
+        this.nickname = request.nickname
+        this.email = request.email
+        this.phone = request.phone
+    }
 }
