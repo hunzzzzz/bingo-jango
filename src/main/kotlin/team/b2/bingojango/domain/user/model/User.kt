@@ -5,7 +5,6 @@ import team.b2.bingojango.domain.user.dto.request.ProfileUpdateRequest
 import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.global.entity.BaseEntity
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 @Entity
