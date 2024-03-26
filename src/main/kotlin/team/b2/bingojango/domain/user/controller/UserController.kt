@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.user.dto.request.*
 import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.dto.response.UploadImageResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
@@ -26,14 +27,6 @@ import java.net.URI
 class UserController(
     private val userService: UserService
 ) {
-    @Operation(summary = "회원가입")
-    @PreAuthorize("isAnonymous()")
-    @PostMapping("/signup")
-    fun signUp(@RequestBody signUpRequest: SignUpRequest): ResponseEntity<Any> {
-        userService.signUp(signUpRequest)
-        return ResponseEntity.created(URI.create("/login")).build()
-    }
-
     @Operation(summary = "로그인")
     @PreAuthorize("isAnonymous()")
     @PostMapping("/login")
@@ -57,6 +50,17 @@ class UserController(
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
             .body(userService.logout(userPrincipal, request, response))
+    }
+
+    @Operation(summary = "회원가입")
+    @PreAuthorize("isAnonymous()")
+    @PostMapping("/signup")
+    fun signUp(
+        @RequestBody signUpRequest: SignUpRequest
+    ): ResponseEntity<SignUpResponse> {
+        return ResponseEntity
+            .created(URI.create("/login"))
+            .body(userService.signUp(signUpRequest))
     }
 
     @Operation(summary = "이메일 찾기")
