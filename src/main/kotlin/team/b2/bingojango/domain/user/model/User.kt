@@ -2,8 +2,11 @@ package team.b2.bingojango.domain.user.model
 
 import jakarta.persistence.*
 import team.b2.bingojango.domain.user.dto.request.ProfileUpdateRequest
+import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.global.entity.BaseEntity
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @Entity
 @Table(name = "Users")
@@ -53,4 +56,18 @@ class User(
         this.email = request.email
         this.phone = request.phone
     }
+
+    companion object {
+        fun User.toResponse(): SignUpResponse {
+            return SignUpResponse(
+                id = this.id!!,
+                name = this.name!!,
+                nickname = this.nickname,
+                email = this.email,
+                phone = this.phone!!,
+                createdAt = ZonedDateTime.now(),
+            )
+        }
+    }
 }
+
