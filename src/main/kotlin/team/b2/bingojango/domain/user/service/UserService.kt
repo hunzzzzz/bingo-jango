@@ -179,7 +179,7 @@ class UserService(
     }
 
     /*
-    [API] 프로필 이미지 업로드
+        [API] 프로필 이미지 업로드
     */
     @Transactional
     fun uploadImage(multipartFile: MultipartFile, userPrincipal: UserPrincipal): UploadImageResponse {
