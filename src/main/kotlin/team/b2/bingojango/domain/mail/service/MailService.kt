@@ -14,7 +14,6 @@ import team.b2.bingojango.global.util.MailUtility
 class MailService(
     private val mailRepository: MailRepository,
     private val mailUtility: MailUtility,
-    private val refrigeratorRepository: RefrigeratorRepository,
     private val entityFinder: EntityFinder,
 ) {
     /*
