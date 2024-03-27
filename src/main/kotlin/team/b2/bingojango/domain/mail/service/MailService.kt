@@ -5,7 +5,6 @@ import team.b2.bingojango.domain.mail.dto.MailResponse
 import team.b2.bingojango.domain.mail.model.Mail
 import team.b2.bingojango.domain.mail.repository.MailRepository
 import team.b2.bingojango.domain.refrigerator.model.RefrigeratorStatus
-import team.b2.bingojango.domain.refrigerator.repository.RefrigeratorRepository
 import team.b2.bingojango.global.exception.cases.ModelNotFoundException
 import team.b2.bingojango.global.util.EntityFinder
 import team.b2.bingojango.global.util.MailUtility
