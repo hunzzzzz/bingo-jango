@@ -164,7 +164,7 @@ class UserService(
     @Transactional
     fun updatePassword(userPrincipal: UserPrincipal, request: PasswordRequest) {
         val user = entityFinder.getUser(userPrincipal.id)
-        if (!passwordEncoder.matches(user.password, request.password)
+        if (!passwordEncoder.matches(request.password, user.password)
         ) throw IllegalArgumentException("기존의 비밀번호가 일치하지 않아요.")
         if (request.newPassword != request.reNewPassword) throw IllegalArgumentException("새로운 비밀번호과 비밀번호 확인이 일치하지 않아요.")
 
@@ -191,7 +191,7 @@ class UserService(
     @Transactional
     fun withdrawUser(request: WithdrawRequest, userPrincipal: UserPrincipal) {
         val user = entityFinder.getUser(userPrincipal.id)
-        if (!passwordEncoder.matches(user.password, request.password)) throw IllegalArgumentException("비밀번호가 일치하지 않아요.")
+        if (!passwordEncoder.matches(request.password, user.password)) throw IllegalArgumentException("비밀번호가 일치하지 않아요.")
 
         user.status = UserStatus.WITHDRAWN
 
