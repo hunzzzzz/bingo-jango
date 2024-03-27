@@ -32,8 +32,8 @@ class FoodService(
     private val userRepository: UserRepository,
 ) {
     /*
-    [API] 음식 조회
-    검증조건 : 본인이 속한 냉장고 이면서 / 속한 냉장고에 들어있는 음식일 경우 조회 가능
+        [API] 음식 조회
+            - 검증조건 : 본인이 속한 냉장고 이면서 / 속한 냉장고에 들어있는 음식일 경우 조회 가능
     */
 //    fun getFood(userPrincipal: UserPrincipal, refrigeratorId: Long): List<FoodResponse> {
 //        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
@@ -47,6 +47,10 @@ class FoodService(
 //            )
 //        }
 //    }
+
+    /*
+        [API] 음식 조회
+    */
     fun getFood(
         userPrincipal: UserPrincipal,
         refrigeratorId: Long,
@@ -63,10 +67,26 @@ class FoodService(
     }
 
     /*
-    [API] 음식 추가
-    검증 조건 1 : 본인이 속한 냉장고에만 음식 추가 가능
-    검증 조건 2 : 같은 음식 이름이 존재할 경우 추가 불가능
-     */
+        [API] 음식 검색 및 정렬
+    */
+    fun searchFood(
+        userPrincipal: UserPrincipal,
+        refrigeratorId: Long,
+        page: Int,
+        sort: SortFood?,
+        category: FoodCategory?,
+        count: Int?,
+        keyword: String?
+    ): Page<FoodResponse> {
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
+        return foodRepository.findByFood(refrigeratorId, page, sort, category, count, keyword).map { it.toResponse() }
+    }
+
+    /*
+        [API] 음식 추가
+            - 검증 조건 1 : 본인이 속한 냉장고에만 음식 추가 가능
+            - 검증 조건 2 : 같은 음식 이름이 존재할 경우 추가 불가능
+    */
     @Transactional
     fun addFood(userPrincipal: UserPrincipal, refrigeratorId: Long, request: AddFoodRequest) {
         validateAccessToRefrigerator(userPrincipal, refrigeratorId)
@@ -85,11 +105,11 @@ class FoodService(
     }
 
     /*
-    [API] 음식 수정
-    검증 조건 1 : 본인이 속한 냉장고에만 음식 수정 가능
-    검증 조건 2-1 : 기존 음식 이름과 변경할 음식 이름이 같으면, 변경 값 저장
-    검증 조건 2-2 : 기존 음식 이름과 변경할 음식 이름이 다르고, 해당 냉장고에 동일 음식 이름 없으면 변경 값 저장
-    검증 조건 2-3 : 기존 음식 이름과 변경할 음식 이름이 다르고, 해당 냉장고에 동일 음식 이름 있으면 저장 불가능
+        [API] 음식 수정
+            - 검증 조건 1 : 본인이 속한 냉장고에만 음식 수정 가능
+            - 검증 조건 2-1 : 기존 음식 이름과 변경할 음식 이름이 같으면, 변경 값 저장
+            - 검증 조건 2-2 : 기존 음식 이름과 변경할 음식 이름이 다르고, 해당 냉장고에 동일 음식 이름 없으면 변경 값 저장
+            - 검증 조건 2-3 : 기존 음식 이름과 변경할 음식 이름이 다르고, 해당 냉장고에 동일 음식 이름 있으면 저장 불가능
     */
     @Transactional
     fun updateFood(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, request: UpdateFoodRequest) {
@@ -107,8 +127,10 @@ class FoodService(
         foodRepository.save(food)
     }
 
-    // [API] 음식 수량 수정
-    // 검증 조건 : 본인이 속한 냉장고에만 수량 수정 가능
+    /*
+        [API] 음식 수량 수정
+            - 검증 조건 : 본인이 속한 냉장고에만 수량 수정 가능
+    */
     @Transactional
     fun updateFoodCount(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long, count: Int) {
         validateAccessToRefrigerator(userPrincipal, refrigeratorId)
@@ -117,14 +139,17 @@ class FoodService(
         foodRepository.save(food)
     }
 
-    // [API] 음식 삭제
-    // 검증 조건 : 본인이 속한 냉장고에만 음식 삭제 가능
+    /*
+        [API] 음식 삭제
+            - 검증 조건 : 본인이 속한 냉장고에만 음식 삭제 가능
+    */
     @Transactional
     fun deleteFood(userPrincipal: UserPrincipal, refrigeratorId: Long, foodId: Long) {
         validateAccessToRefrigerator(userPrincipal, refrigeratorId)
         val food = findFood(refrigeratorId, foodId)
         foodRepository.delete(food)
     }
+
 
     // [내부 메서드] 존재하는 냉장고인지 확인 (soft delete 된 냉장고 제외)
     // 로그인한 유저가 가지고 있는 냉장고 맞는지 검증
@@ -145,17 +170,5 @@ class FoodService(
         return foodRepository.findByIdAndRefrigeratorId(foodId, refrigeratorId) ?: throw ModelNotFoundException("Food")
     }
 
-    // 음식 검색 및 정렬
-    fun searchFood(
-        userPrincipal: UserPrincipal,
-        refrigeratorId: Long,
-        page: Int,
-        sort: SortFood?,
-        category: FoodCategory?,
-        count: Int?,
-        keyword: String?
-    ): Page<FoodResponse> {
-        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
-        return foodRepository.findByFood(refrigeratorId, page, sort, category, count, keyword).map { it.toResponse() }
-    }
+
 }

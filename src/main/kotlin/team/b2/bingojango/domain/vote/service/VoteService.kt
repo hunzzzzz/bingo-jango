@@ -23,7 +23,9 @@ class VoteService(
     private val voteRepository: VoteRepository,
     private val entityFinder: EntityFinder
 ) {
-    // [API] 현재 공동구매 목록에 대한 투표 현황 조회
+    /*
+        [API] 현재 공동구매 목록에 대한 투표 현황 조회
+   */
     fun showVote(refrigeratorId: Long) =
         VoteResponse.from(
             vote = getCurrentVote(),
