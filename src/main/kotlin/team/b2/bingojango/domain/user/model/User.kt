@@ -59,10 +59,10 @@ class User(
         fun User.toResponse(): UserResponse {
             return UserResponse(
                 id = this.id!!,
-                name = this.name!!,
+                name = this.name?: "",
                 nickname = this.nickname,
                 email = this.email,
-                phone = this.phone!!,
+                phone = this.phone?: "",
                 createdAt = this.createdAt,
             )
         }
