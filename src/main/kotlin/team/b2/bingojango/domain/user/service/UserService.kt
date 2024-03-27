@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.mail.service.MailService
-import team.b2.bingojango.domain.member.repository.MemberRepository
 import team.b2.bingojango.domain.user.dto.request.*
-import team.b2.bingojango.domain.user.dto.response.*
+import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
+import team.b2.bingojango.domain.user.dto.response.LoginResponse
+import team.b2.bingojango.domain.user.dto.response.UploadImageResponse
+import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.model.User
 import team.b2.bingojango.domain.user.model.User.Companion.toResponse
 import team.b2.bingojango.domain.user.model.UserStatus
@@ -34,34 +36,27 @@ class UserService(
     private val jwtPlugin: JwtPlugin,
     private val mailService: MailService,
     private val tokenGenerator: TokenGenerator,
-    private val memberRepository: MemberRepository,
     private val s3Service: S3Service,
     private val entityFinder: EntityFinder,
     @Value("\${app.cookie.expiry}") private val cookieExpirationTime: Int,
 ) {
     /*
        [API] 로그인
-          - 이메일 일치 여부 확인
-          - 비밀번호 일치 여부 확인
-          - RefreshToken 생성 후 쿠키와 DB에 저장
-          - AccessToken 생성 후 반환
+          - 로그인 정보 검증 (이메일, 비밀번호)
+          - 유저 검색
+          - 엑세스 토큰 및 리프레시 토큰 생성
+          - 리프레시 토큰 생성 후 쿠키와 DB에 저장
+          - 엑세스 토큰 및 리프레시 토큰 반환
     */
-    fun login(
-        request: LoginRequest,
-        response: HttpServletResponse
-    ) =
-        request.let {
-            checkLoginInfo(it.email, it.password)
-            entityFinder.getUserByEmail(it.email)
-        }.let {
-            val accessToken = jwtPlugin.generateAccessToken(it.id.toString(), it.email, it.role.name)
-            val refreshToken = jwtPlugin.generateRefreshToken(it.id.toString(), it.email, it.role.name)
-
-            jwtPlugin.storeToken(it, refreshToken)
-            CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieExpirationTime)
-
-            LoginResponse(accessToken)
-        }
+    fun login(request: LoginRequest, response: HttpServletResponse): LoginResponse {
+        checkLoginInfo(request.email, request.password)
+        val user = entityFinder.getUserByEmail(request.email)
+        val accessToken = jwtPlugin.generateAccessToken(user.id.toString(), user.email, user.role.name)
+        val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
+        jwtPlugin.storeToken(user, refreshToken)
+        CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieExpirationTime)
+        return LoginResponse(accessToken, refreshToken)
+    }
 
     /*
        [API] 로그아웃
@@ -84,20 +79,20 @@ class UserService(
           - 닉네임 중복 검사
           - 비밀번호 확인과의 일치 확인
     */
-    fun signUp(signUpRequest: SignUpRequest): SignUpResponse {
+    fun signUp(signUpRequest: SignUpRequest): UserResponse {
         if (userRepository.existsByEmail(signUpRequest.email)) throw IllegalArgumentException("이미 등록된 이메일 주소입니다.")
         if (userRepository.existsByNickname(signUpRequest.nickname)) throw IllegalArgumentException("이미 사용 중인 닉네임입니다.")
         if (signUpRequest.password != signUpRequest.passwordConfirm) throw IllegalArgumentException("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
         return userRepository.save(User(
-            name = signUpRequest.name,
-            nickname = signUpRequest.nickname,
-            email = signUpRequest.email,
-            phone = signUpRequest.phone,
-            password = passwordEncoder.encode(signUpRequest.password),
-            provider = null,
-            providerId = null,
-            image = null
-        )).toResponse()
+                name = signUpRequest.name,
+                nickname = signUpRequest.nickname,
+                email = signUpRequest.email,
+                phone = signUpRequest.phone,
+                password = passwordEncoder.encode(signUpRequest.password),
+                provider = null,
+                providerId = null,
+                image = null
+            )).toResponse()
     }
 
     /*
@@ -129,22 +124,20 @@ class UserService(
     }
 
     /*
-       [API] 프로필 조회
-          - 타인의 프로필을 조회하는 경우, nickname, email, refrigerators(냉장고 목록), createdAt 조회 가능
-          - 본인의 프로필을 조회하는 경우, ProfileResponse 에 name, phone 정보까지 추가해서 리턴
+       [API] 본인 프로필 조회
     */
-    fun getProfile(userPrincipal: UserPrincipal, userId: Long) =
-        entityFinder.getUser(userId)
-            .let {
-                ProfileResponse.getProfile(
-                    user = it,
-                    refrigerators = memberRepository.findAllByUserId(userId)
-                        .map { member -> member.refrigerator.toResponse() }
-                ).let { response ->
-                    if (userId == userPrincipal.id) response.updateMyProfile(it)
-                    response
-                }
-            }
+    fun getProfileByMe(userPrincipal: UserPrincipal): UserResponse {
+        val user = entityFinder.getUser(userPrincipal.id)
+        return user.toResponse()
+    }
+
+    /*
+       [API] 타인 프로필 조회
+    */
+    fun getProfileById(userId: Long): UserResponse {
+        val user = entityFinder.getUser(userId)
+        return user.toResponse()
+    }
 
     /*
        [API]프로필 수정
@@ -216,11 +209,6 @@ class UserService(
             }
         }
     }
-
-
-
-
-
 
 
     // [내부 메서드] 로그인 정보를 확인

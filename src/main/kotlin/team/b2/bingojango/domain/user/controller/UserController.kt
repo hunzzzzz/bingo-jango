@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile
 import team.b2.bingojango.domain.user.dto.request.*
 import team.b2.bingojango.domain.user.dto.response.FindEmailResponse
 import team.b2.bingojango.domain.user.dto.response.LoginResponse
-import team.b2.bingojango.domain.user.dto.response.SignUpResponse
 import team.b2.bingojango.domain.user.dto.response.UploadImageResponse
+import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.domain.user.service.UserService
 import team.b2.bingojango.global.security.util.UserPrincipal
 import java.net.URI
@@ -57,7 +57,7 @@ class UserController(
     @PostMapping("/signup")
     fun signUp(
         @RequestBody signUpRequest: SignUpRequest
-    ): ResponseEntity<SignUpResponse> {
+    ): ResponseEntity<UserResponse> {
         return ResponseEntity
             .created(URI.create("/login"))
             .body(userService.signUp(signUpRequest))
@@ -77,13 +77,21 @@ class UserController(
         return ResponseEntity.ok().body(userService.findPassword(request))
     }
 
-    @Operation(summary = "프로필 조회")
+    @Operation(summary = "본인 프로필 조회")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile")
+    fun getProfileByMe(
+        @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok().body(userService.getProfileByMe(userPrincipal))
+    }
+
+    @Operation(summary = "타인 프로필 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{userId}")
-    fun getProfile(
-        @AuthenticationPrincipal userPrincipal: UserPrincipal,
-        @PathVariable userId: Long
-    ) = ResponseEntity.ok().body(userService.getProfile(userPrincipal, userId))
+    fun getProfileById(@PathVariable userId: Long): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok().body(userService.getProfileById(userId))
+    }
 
     @Operation(summary = "프로필 수정")
     @PreAuthorize("isAuthenticated()")

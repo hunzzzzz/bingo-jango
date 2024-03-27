@@ -2,10 +2,9 @@ package team.b2.bingojango.domain.user.model
 
 import jakarta.persistence.*
 import team.b2.bingojango.domain.user.dto.request.ProfileUpdateRequest
-import team.b2.bingojango.domain.user.dto.response.SignUpResponse
+import team.b2.bingojango.domain.user.dto.response.UserResponse
 import team.b2.bingojango.global.entity.BaseEntity
 import team.b2.bingojango.global.oauth.domain.entity.OAuth2Provider
-import java.time.ZonedDateTime
 
 @Entity
 @Table(name = "Users")
@@ -49,7 +48,7 @@ class User(
     val id: Long? = null
 
 
-    fun updateProfileSupport(request: ProfileUpdateRequest){
+    fun updateProfileSupport(request: ProfileUpdateRequest) {
         this.name = request.name
         this.nickname = request.nickname
         this.email = request.email
@@ -57,14 +56,14 @@ class User(
     }
 
     companion object {
-        fun User.toResponse(): SignUpResponse {
-            return SignUpResponse(
+        fun User.toResponse(): UserResponse {
+            return UserResponse(
                 id = this.id!!,
                 name = this.name!!,
                 nickname = this.nickname,
                 email = this.email,
                 phone = this.phone!!,
-                createdAt = ZonedDateTime.now(),
+                createdAt = this.createdAt,
             )
         }
     }
