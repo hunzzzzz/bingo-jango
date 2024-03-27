@@ -35,23 +35,23 @@ class FoodService(
         [API] 음식 조회
             - 검증조건 : 본인이 속한 냉장고 이면서 / 속한 냉장고에 들어있는 음식일 경우 조회 가능
     */
-//    fun getFood(userPrincipal: UserPrincipal, refrigeratorId: Long): List<FoodResponse> {
-//        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
-//        return foodRepository.findByRefrigeratorId(refrigeratorId)
-//                .map {
-//            FoodResponse(
-//                    category = it.category.name,
-//                    name = it.name,
-//                    expirationDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(it.expirationDate),
-//                    count = it.count,
-//            )
-//        }
-//    }
+    fun getFoodList(userPrincipal: UserPrincipal, refrigeratorId: Long): List<FoodResponse> {
+        validateAccessToRefrigerator(userPrincipal, refrigeratorId)
+        return foodRepository.findByRefrigeratorId(refrigeratorId)
+                .map {
+            FoodResponse(
+                    category = it.category.name,
+                    name = it.name,
+                    expirationDate = ZonedDateTimeConverter.convertZonedDateTimeFromStringDateTime(it.expirationDate),
+                    count = it.count,
+            )
+        }
+    }
 
     /*
         [API] 음식 조회
     */
-    fun getFood(
+    fun getFoodByCursor(
         userPrincipal: UserPrincipal,
         refrigeratorId: Long,
         cursorName: String?,

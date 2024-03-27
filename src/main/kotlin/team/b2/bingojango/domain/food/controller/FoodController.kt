@@ -22,22 +22,22 @@ import team.b2.bingojango.global.security.util.UserPrincipal
 class FoodController(
     private val foodService: FoodService
 ) {
-//    @Operation(summary = "음식 조회")
-//    @PreAuthorize("isAuthenticated()")
-//    @GetMapping
-//    fun getFood(
-//            @PathVariable refrigeratorId: Long,
-//            @AuthenticationPrincipal userPrincipal: UserPrincipal
-//    ): ResponseEntity<List<FoodResponse>>{
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(foodService.getFood(userPrincipal, refrigeratorId))
-//    }
+    @Operation(summary = "음식 조회")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    fun getFoodList(
+            @PathVariable refrigeratorId: Long,
+            @AuthenticationPrincipal userPrincipal: UserPrincipal
+    ): ResponseEntity<List<FoodResponse>>{
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(foodService.getFoodList(userPrincipal, refrigeratorId))
+    }
 
     @Operation(summary = "음식 조회")
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    fun getFood(
+    fun getFoodByCursor(
         @PathVariable refrigeratorId: Long,
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestParam(name = "cursorName", required = false) cursorName: String?,
@@ -45,7 +45,7 @@ class FoodController(
     ): ResponseEntity<List<FoodResponse>> {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(foodService.getFood(userPrincipal, refrigeratorId, cursorName, size))
+            .body(foodService.getFoodByCursor(userPrincipal, refrigeratorId, cursorName, size))
     }
 
     @Operation(summary = "음식 추가")
