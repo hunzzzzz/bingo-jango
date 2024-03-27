@@ -36,7 +36,7 @@ class FoodController(
 
     @Operation(summary = "음식 조회")
     @PreAuthorize("isAuthenticated()")
-    @GetMapping
+    @GetMapping("/cursor")
     fun getFoodByCursor(
         @PathVariable refrigeratorId: Long,
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
