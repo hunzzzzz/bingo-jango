@@ -72,7 +72,7 @@ class JwtPlugin(
     @Transactional
     fun deleteToken(userPrincipal: UserPrincipal) {
         val user = entityFinder.getUser(userPrincipal.id)
-        val refreshToken = tokenRepository.findByUser(user) ?: throw ModelNotFoundException("RefreshToken")
-        tokenRepository.delete(refreshToken)
+        val refreshTokens = tokenRepository.findAllByUser(user) ?: throw ModelNotFoundException("RefreshToken")
+        tokenRepository.deleteAll(refreshTokens)
     }
 }
