@@ -16,13 +16,13 @@ class User(
     @Column(name = "name", nullable = true)
     var name: String?,
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "nickname", nullable = false, unique = true)
     var nickname: String,
 
     @Column(name = "phone", nullable = true)
     var phone: String?,
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     var email: String,
 
     @Column(name = "password", nullable = true)
