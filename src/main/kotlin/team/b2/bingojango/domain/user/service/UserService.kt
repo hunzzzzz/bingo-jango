@@ -55,7 +55,7 @@ class UserService(
         val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
         jwtPlugin.storeToken(user, refreshToken)
         CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieExpirationTime)
-        return LoginResponse(accessToken, refreshToken)
+        return LoginResponse(accessToken, refreshToken, user.id!!)
     }
 
     /*
