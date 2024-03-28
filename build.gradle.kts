@@ -42,6 +42,7 @@ dependencies {
     // DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.postgresql:postgresql")
     // OAuth2
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     // QueryDSL
