@@ -149,8 +149,6 @@ class UserService(
         val user = entityFinder.getUser(userPrincipal.id)
         if (userRepository.existsByNickname(request.nickname) && request.nickname != user.nickname)
             throw IllegalArgumentException("존재하는 닉네임이에요.")
-        if (userRepository.existsByEmail(request.email) && request.email != user.email)
-            throw IllegalArgumentException("존재하는 이메일이에요.")
 
         user.updateProfileSupport(request)
         userRepository.save(user)
