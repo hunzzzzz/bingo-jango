@@ -64,6 +64,7 @@ class User(
                 email = this.email,
                 phone = this.phone?: "",
                 createdAt = this.createdAt,
+                    image = this.image
             )
         }
     }
