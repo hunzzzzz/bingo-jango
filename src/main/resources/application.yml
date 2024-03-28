@@ -1,6 +1,6 @@
 # Server-Port
 server:
-  port: 80
+  port: 443
 
 root:
   front: ${FRONT_ROOT_URI}
