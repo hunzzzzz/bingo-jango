@@ -22,7 +22,7 @@ class User(
     @Column(name = "phone", nullable = true)
     var phone: String?,
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     var email: String,
 
     @Column(name = "password", nullable = true)
