@@ -9,4 +9,5 @@ data class UserResponse(
     val email: String,
     val phone: String,
     val createdAt: ZonedDateTime,
+    val image: String?
 )
