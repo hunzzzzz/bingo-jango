@@ -51,7 +51,6 @@ class User(
     fun updateProfileSupport(request: ProfileUpdateRequest) {
         this.name = request.name
         this.nickname = request.nickname
-        this.email = request.email
         this.phone = request.phone
     }
 
