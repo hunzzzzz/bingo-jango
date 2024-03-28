@@ -32,7 +32,7 @@ class OAuth2LoginService(
         val refreshToken = jwtPlugin.generateRefreshToken(user.id.toString(), user.email, user.role.name)
         CookieUtil.addCookie(response, "refreshToken", refreshToken, cookieExpirationTime)
         jwtPlugin.storeToken(user, refreshToken)
-        return LoginResponse(accessToken, refreshToken)
+        return LoginResponse(accessToken, refreshToken, user.id!!)
 
     }
 }
