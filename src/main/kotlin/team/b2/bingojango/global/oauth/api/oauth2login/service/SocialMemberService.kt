@@ -14,7 +14,7 @@ class SocialMemberService(
     // OAuth2LoginUserInfo를 회원가입 시키는 역할
     fun registerIfAbsent(userInfo: OAuth2LoginUserInfo): User {
         return if (!userRepository.existsByProviderAndProviderId(userInfo.provider, userInfo.id)) {
-            if (userRepository.existsByEmail(userInfo.email)) throw IllegalArgumentException("이미 가입된 이메일입니다.")
+            if (userRepository.existsByEmail(userInfo.email)) throw IllegalArgumentException("이미 사용 중인 이메일입니다.")
             val user = User(
                 role = UserRole.USER,
                 name = null,

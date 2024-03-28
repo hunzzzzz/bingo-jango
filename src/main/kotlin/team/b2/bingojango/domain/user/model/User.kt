@@ -16,7 +16,7 @@ class User(
     @Column(name = "name", nullable = true)
     var name: String?,
 
-    @Column(name = "nickname", nullable = false, unique = true)
+    @Column(name = "nickname", nullable = false)
     var nickname: String,
 
     @Column(name = "phone", nullable = true)
